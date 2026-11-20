@@ -11,6 +11,7 @@ Eine iPad-Web-App: Den Gruppenraum von oben einrichten, Kinder als farbige Kreis
   - Kinder aus der linken Leiste in den Raum ziehen und dort frei verschieben, auch mit mehreren Fingern gleichzeitig.
   - Ein Kind zurück auf die Leiste ziehen nimmt es aus dem Raum.
   - Ein Kind antippen: Name oder Farbe ändern und sehen, wo es zuletzt gespielt hat.
+  - **Aussehen gestalten**: Statt des Kreises (Standard) eine kleine Figur bauen, entweder als *Kind* (Hautfarbe, Frisur, Haarfarbe, Augen, Mund, Pulli, Extras wie Brille, Krone oder Mütze) oder als *Tier* (Katze, Hund, Hase, Bär, Fuchs, Panda, Maus, Frosch). Mit 🎲 gibt es ein zufälliges Aussehen.
 - **Ansicht merken**: speichert, welches Kind gerade wo ist (mit Uhrzeit und Bezeichnung wie „Freispiel“). Die App merkt sich auch den Bereich, in dem das Kind war.
 - **Verlauf**: frühere Ansichten anschauen und bei Bedarf wiederherstellen.
 - **Menü (…)**: Raumname und -größe, alle Kinder zurück in die Leiste, Sicherung exportieren/importieren, alles löschen.
