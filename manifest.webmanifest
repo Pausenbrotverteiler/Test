@@ -1,0 +1,17 @@
+{
+  "name": "Kita-Raum",
+  "short_name": "Kita-Raum",
+  "description": "Gruppenraum von oben einrichten und sehen, welches Kind wo spielt.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f6f1ea",
+  "theme_color": "#f6f1ea",
+  "lang": "de",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

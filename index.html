@@ -1,0 +1,793 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Kita-Raum</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Kita-Raum">
+<meta name="theme-color" content="#f6f1ea">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon-192.png">
+<style>
+:root{
+  --bg:#f6f1ea; --panel:#fffdf9; --ink:#3b3530; --muted:#8a8178; --line:#e8dfd3;
+  --accent:#e07a5f; --accent-ink:#fff; --sage:#81b29a; --wall:#cbbba8;
+  --shadow:0 6px 24px rgba(80,60,40,.12), 0 1px 3px rgba(80,60,40,.08);
+  --r:16px;
+  --safe-t:env(safe-area-inset-top,0px); --safe-b:env(safe-area-inset-bottom,0px);
+  --safe-l:env(safe-area-inset-left,0px); --safe-r:env(safe-area-inset-right,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
+  font-family:ui-rounded,"SF Pro Rounded",-apple-system,system-ui,"Segoe UI",sans-serif;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overscroll-behavior:none}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
+input{font:inherit;color:inherit;-webkit-user-select:text;user-select:text}
+svg{display:block}
+
+#app{display:grid;grid-template-rows:auto 1fr;height:100%;
+  padding:var(--safe-t) var(--safe-r) var(--safe-b) var(--safe-l)}
+
+/* ---------- Topbar ---------- */
+.topbar{display:flex;align-items:center;gap:10px;padding:10px 14px;}
+.title{font-weight:700;font-size:20px;letter-spacing:-.01em;padding:6px 8px;border-radius:10px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:28vw}
+.title small{display:block;font-weight:500;font-size:12px;color:var(--muted);letter-spacing:0}
+.seg{display:flex;background:#ece4d9;border-radius:12px;padding:3px;gap:2px}
+.seg button{padding:8px 14px;border-radius:9px;font-weight:600;font-size:15px;color:var(--muted)}
+.seg button.on{background:var(--panel);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.spacer{flex:1}
+.tbtn{display:flex;align-items:center;gap:7px;height:42px;padding:0 14px;border-radius:12px;
+  background:var(--panel);box-shadow:0 1px 2px rgba(80,60,40,.1);font-weight:600;font-size:15px}
+.tbtn svg{width:20px;height:20px}
+.tbtn.primary{background:var(--accent);color:var(--accent-ink)}
+.tbtn.icon{width:42px;padding:0;justify-content:center}
+.tbtn:active{transform:scale(.97)}
+.hide{display:none!important}
+@media (max-width:820px){ .tbtn .lbl{display:none} .tbtn{padding:0 11px} .title{max-width:22vw} }
+
+/* ---------- Main ---------- */
+main{display:grid;grid-template-columns:96px 1fr;min-height:0;gap:0}
+.tray{background:var(--panel);margin:0 0 14px 14px;border-radius:var(--r);box-shadow:var(--shadow);
+  display:flex;flex-direction:column;min-height:0;overflow:hidden;transition:background .15s}
+.tray.drop{background:#fbe9e3}
+.trayHead{padding:12px 0 8px;display:flex;flex-direction:column;align-items:center;gap:4px;border-bottom:1px solid var(--line)}
+.addKid{width:56px;height:56px;border-radius:50%;border:2px dashed var(--accent);color:var(--accent);
+  display:grid;place-items:center;background:#fdf3ef}
+.addKid svg{width:26px;height:26px}
+.trayHead span{font-size:12px;font-weight:600;color:var(--muted)}
+.trayList{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 0 16px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.trayKid{display:flex;flex-direction:column;align-items:center;gap:3px;width:84px;touch-action:pan-y;position:relative}
+.trayKid .nm{font-size:12px;font-weight:600;max-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trayKid.placed .av{opacity:.45}
+.trayKid.placed::after{content:"";position:absolute;top:2px;right:14px;width:12px;height:12px;border-radius:50%;
+  background:var(--sage);border:2px solid var(--panel)}
+.trayEmpty{font-size:12px;color:var(--muted);text-align:center;padding:8px 10px;line-height:1.35}
+.av{width:52px;height:52px;border-radius:50%;overflow:hidden;display:grid;place-items:center;color:#fff;
+  font-weight:700;font-size:18px;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.18);flex:none}
+.av img{width:100%;height:100%;object-fit:cover;pointer-events:none}
+
+.stage{position:relative;min-height:0;margin:0 14px 14px;}
+#room{width:100%;height:100%;touch-action:none}
+.banner{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:#3d5a80;color:#fff;
+  border-radius:14px;padding:8px 8px 8px 16px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow);
+  font-weight:600;font-size:15px;white-space:nowrap;z-index:5}
+.banner button{background:rgba(255,255,255,.18);padding:7px 12px;border-radius:10px;font-weight:600}
+.banner button.solid{background:#fff;color:#3d5a80}
+
+/* ---------- selection toolbar ---------- */
+.seltools{position:absolute;display:flex;gap:2px;background:var(--ink);border-radius:12px;padding:4px;
+  box-shadow:var(--shadow);z-index:6;transform:translate(-50%,-100%)}
+.seltools button{width:40px;height:38px;border-radius:9px;color:#fff;display:grid;place-items:center}
+.seltools button:active{background:rgba(255,255,255,.15)}
+.seltools button svg{width:20px;height:20px}
+.seltools .sep{width:1px;background:rgba(255,255,255,.2);margin:6px 2px}
+
+/* ---------- Drawer (Möbel, Verlauf) ---------- */
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(360px,88vw);background:var(--panel);z-index:20;
+  box-shadow:-10px 0 40px rgba(60,40,20,.18);transform:translateX(105%);transition:transform .25s ease,visibility 0s .25s;visibility:hidden;
+  display:flex;flex-direction:column;padding-top:var(--safe-t);padding-bottom:var(--safe-b)}
+.drawer.open{transform:none;visibility:visible;transition:transform .25s ease}
+.drawer header{display:flex;align-items:center;padding:16px 16px 10px;gap:8px}
+.drawer header h2{margin:0;font-size:20px;flex:1}
+.drawer .body{flex:1;overflow-y:auto;padding:0 16px 20px;-webkit-overflow-scrolling:touch}
+.close{width:36px;height:36px;border-radius:50%;background:#f0e9df;display:grid;place-items:center}
+.close svg{width:18px;height:18px}
+.cat h3{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:16px 0 8px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tile{background:#f8f3ec;border-radius:12px;padding:8px 4px 6px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:600}
+.tile svg{width:64px;height:52px}
+.tile:active{background:#efe5d8}
+.snap{display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;background:#f8f3ec;margin-bottom:8px}
+.snap .info{flex:1;min-width:0}
+.snap .info b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snap .info span{font-size:13px;color:var(--muted)}
+.snap button{padding:8px 10px;border-radius:9px;background:#fff;font-weight:600;font-size:14px}
+.snap button.del{color:#c0392b;background:transparent}
+.muted{color:var(--muted);font-size:14px;line-height:1.45}
+
+/* ---------- Sheet (modal) ---------- */
+.scrim{position:fixed;inset:0;background:rgba(50,35,25,.35);z-index:15;opacity:0;pointer-events:none;transition:opacity .2s}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:50%;top:50%;transform:translate(-50%,-46%) scale(.98);opacity:0;pointer-events:none;
+  width:min(440px,92vw);max-height:88vh;overflow-y:auto;background:var(--panel);border-radius:22px;z-index:30;
+  box-shadow:0 20px 60px rgba(50,30,10,.3);padding:22px;transition:all .2s ease}
+.sheet.on{opacity:1;pointer-events:auto;transform:translate(-50%,-50%)}
+.sheet h2{margin:0 0 14px;font-size:20px}
+.photoBig{width:150px;height:150px;border-radius:50%;margin:0 auto 10px;display:grid;place-items:center;
+  background:#f3ece2;border:3px dashed #d8cbbb;overflow:hidden;color:var(--muted);font-weight:600;font-size:14px;position:relative}
+.photoBig img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.photoBig.has{border:4px solid #fff;box-shadow:0 4px 14px rgba(0,0,0,.15)}
+.photoBig .ph{display:flex;flex-direction:column;align-items:center;gap:6px}
+.photoBig .ph svg{width:34px;height:34px}
+.photoRow{display:flex;justify-content:center;gap:8px;margin-bottom:14px}
+.pill{padding:8px 14px;border-radius:999px;background:#f0e9df;font-weight:600;font-size:14px}
+.field{width:100%;padding:13px 14px;border-radius:12px;border:1.5px solid var(--line);background:#fff;font-size:17px;outline:none}
+.field:focus{border-color:var(--accent)}
+.label{font-size:13px;font-weight:600;color:var(--muted);margin:14px 0 6px}
+.colors{display:flex;gap:8px;flex-wrap:wrap}
+.colors button{width:32px;height:32px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px var(--line)}
+.colors button.on{box-shadow:0 0 0 2px var(--ink)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.actions{display:flex;gap:8px;margin-top:20px;flex-wrap:wrap}
+.btn{flex:1;padding:13px 14px;border-radius:12px;background:#f0e9df;font-weight:700;font-size:16px;white-space:nowrap}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.danger{background:#fbe5e1;color:#b03a2e}
+.btn.small{flex:none;font-size:14px;padding:10px 12px}
+.hist{margin-top:6px;border-top:1px solid var(--line)}
+.hist div{display:flex;justify-content:space-between;gap:10px;padding:8px 2px;border-bottom:1px solid var(--line);font-size:14px}
+.hist div span:first-child{color:var(--muted);white-space:nowrap}
+.hist div span:last-child{font-weight:600;text-align:right}
+.menuList button{display:flex;width:100%;align-items:center;gap:12px;padding:14px 12px;border-radius:12px;font-weight:600;font-size:16px;text-align:left}
+.menuList button:active{background:#f3ece2}
+.menuList button svg{width:22px;height:22px;color:var(--muted)}
+.menuList .danger{color:#b03a2e}
+.menuList .danger svg{color:#b03a2e}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+.ghost{position:fixed;z-index:50;pointer-events:none;transform:translate(-50%,-50%) scale(1.12);transition:transform .1s}
+.toast{position:fixed;left:50%;bottom:calc(24px + var(--safe-b));transform:translateX(-50%) translateY(20px);opacity:0;
+  background:var(--ink);color:#fff;padding:12px 18px;border-radius:14px;font-weight:600;z-index:60;transition:all .25s;pointer-events:none}
+.toast.on{opacity:1;transform:translateX(-50%)}
+
+/* SVG */
+.kidname{font-weight:700;fill:#3b3530}
+.sel-outline{fill:none;stroke:var(--accent);stroke-dasharray:6 5}
+.furn-locked{pointer-events:none}
+@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.25)}100%{transform:scale(1)}}
+.pulse > g{animation:pulse .5s ease 2;transform-box:fill-box;transform-origin:center}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <button class="title" id="titleBtn"><span id="roomName">Gruppenraum</span><small id="roomSub">0 Kinder</small></button>
+    <div class="seg" id="modeSeg">
+      <button data-mode="kids" class="on">Kinder</button>
+      <button data-mode="furnish">Einrichten</button>
+    </div>
+    <div class="spacer"></div>
+    <button class="tbtn hide" id="furnBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11V8a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v3"/><path d="M2 13a2 2 0 0 1 4 0v2h12v-2a2 2 0 0 1 4 0v4a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z"/></svg><span class="lbl">Möbel</span></button>
+    <button class="tbtn primary" id="snapBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg><span class="lbl">Ansicht merken</span></button>
+    <button class="tbtn" id="histBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span class="lbl">Verlauf</span></button>
+    <button class="tbtn icon" id="menuBtn" aria-label="Menü"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>
+  </header>
+  <main>
+    <aside class="tray" id="tray">
+      <div class="trayHead">
+        <button class="addKid" id="addKidBtn" aria-label="Kind hinzufügen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+        <span>Kind</span>
+      </div>
+      <div class="trayList" id="trayList"></div>
+    </aside>
+    <section class="stage" id="stage">
+      <svg id="room" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="seltools hide" id="selTools">
+        <button data-act="rotl" aria-label="Links drehen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
+        <button data-act="rotr" aria-label="Rechts drehen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg></button>
+        <span class="sep"></span>
+        <button data-act="smaller" aria-label="Kleiner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 12h12"/></svg></button>
+        <button data-act="bigger" aria-label="Größer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 6v12M6 12h12"/></svg></button>
+        <span class="sep"></span>
+        <button data-act="rename" aria-label="Benennen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+        <button data-act="dup" aria-label="Duplizieren"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button>
+        <button data-act="del" aria-label="Löschen"><svg viewBox="0 0 24 24" fill="none" stroke="#ff9d8a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg></button>
+      </div>
+      <div class="banner hide" id="banner"><span id="bannerText"></span><button class="solid" id="restoreBtn">Wiederherstellen</button><button id="unviewBtn">Zurück</button></div>
+    </section>
+  </main>
+</div>
+
+<!-- Möbel-Katalog -->
+<aside class="drawer" id="catDrawer">
+  <header><h2>Möbel hinzufügen</h2><button class="close" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
+  <div class="body" id="catBody"></div>
+</aside>
+
+<!-- Verlauf -->
+<aside class="drawer" id="histDrawer">
+  <header><h2>Verlauf</h2><button class="close" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
+  <div class="body" id="histBody"></div>
+</aside>
+
+<div class="scrim" id="scrim"></div>
+
+<!-- Kind -->
+<div class="sheet" id="kidSheet">
+  <h2 id="kidSheetTitle">Kind hinzufügen</h2>
+  <button class="photoBig" id="kidPhoto"><div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg>Foto aufnehmen</div></button>
+  <div class="photoRow">
+    <button class="pill" id="kidCam">Kamera</button>
+    <button class="pill" id="kidLib">Aus Fotos</button>
+    <button class="pill hide" id="kidNoPhoto">Foto entfernen</button>
+  </div>
+  <input class="field" id="kidName" placeholder="Name des Kindes" autocomplete="off" enterkeyhint="done">
+  <div id="kidColorWrap"><div class="label">Farbe (wenn kein Foto)</div><div class="colors" id="kidColors"></div></div>
+  <div id="kidHistWrap" class="hide"><div class="label">Zuletzt gespielt</div><div class="hist" id="kidHist"></div></div>
+  <div class="actions">
+    <button class="btn danger small hide" id="kidDelete">Löschen</button>
+    <button class="btn small hide" id="kidUnplace">In die Leiste</button>
+    <button class="btn" data-cancel>Abbrechen</button>
+    <button class="btn primary" id="kidSave">Fertig</button>
+  </div>
+</div>
+
+<!-- Ansicht merken -->
+<div class="sheet" id="snapSheet">
+  <h2>Ansicht merken</h2>
+  <p class="muted" style="margin:-6px 0 12px">Speichert, welches Kind gerade wo im Raum ist. Im Verlauf kannst du die Ansicht später wieder aufrufen.</p>
+  <input class="field" id="snapLabel" placeholder="z. B. Freispiel" autocomplete="off" enterkeyhint="done">
+  <div class="chips" id="snapChips"></div>
+  <div class="actions"><button class="btn" data-cancel>Abbrechen</button><button class="btn primary" id="snapSave">Merken</button></div>
+</div>
+
+<!-- Menü -->
+<div class="sheet" id="menuSheet">
+  <h2>Raum</h2>
+  <div class="label" style="margin-top:0">Name</div>
+  <input class="field" id="roomNameInput" autocomplete="off">
+  <div class="label">Größe (Meter)</div>
+  <div class="row2"><input class="field" id="roomW" type="number" inputmode="decimal" step="0.5" min="3" max="30" placeholder="Breite"><input class="field" id="roomH" type="number" inputmode="decimal" step="0.5" min="3" max="30" placeholder="Tiefe"></div>
+  <div class="menuList" style="margin-top:14px">
+    <button id="allToTray"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Alle Kinder zurück in die Leiste</button>
+    <button id="exportBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>Sicherung exportieren</button>
+    <button id="importBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9M7 14l5-5 5 5M5 3h14"/></svg>Sicherung importieren</button>
+    <button id="resetBtn" class="danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>Alles löschen</button>
+  </div>
+  <p class="muted" style="font-size:12px;margin:10px 4px 0">Alle Daten und Fotos bleiben nur auf diesem Gerät gespeichert und werden nirgendwohin hochgeladen.</p>
+  <div class="actions"><button class="btn primary" id="menuDone">Fertig</button></div>
+</div>
+
+<input type="file" id="camInput" accept="image/*" capture="environment" hidden>
+<input type="file" id="libInput" accept="image/*" hidden>
+<input type="file" id="importInput" accept="application/json,.json" hidden>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* ================= Helpers ================= */
+const $ = s => document.querySelector(s);
+const uid = () => Math.random().toString(36).slice(2, 10);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const KID_COLORS = ['#e07a5f','#81b29a','#e9b44c','#3d5a80','#b5838d','#6d9dc5','#e5989b','#9c89b8','#5fa8a0','#d08c60'];
+const initials = n => (n || '?').trim().split(/\s+/).slice(0, 2).map(p => p[0]).join('').toUpperCase() || '?';
+const fmtTime = t => new Date(t).toLocaleString('de-DE', {weekday:'short', day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
+
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('on'), 2000); }
+
+/* ================= Storage (IndexedDB, Fallback localStorage) ================= */
+const Store = {
+  _db: null,
+  db(){
+    if (this._db) return this._db;
+    this._db = new Promise((res, rej) => {
+      const r = indexedDB.open('kita-raum', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('kv');
+      r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+    });
+    return this._db;
+  },
+  async get(k){
+    try { const db = await this.db(); return await new Promise((res, rej) => { const q = db.transaction('kv').objectStore('kv').get(k); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); }); }
+    catch(e){ try { return JSON.parse(localStorage.getItem(k)); } catch(_){ return null; } }
+  },
+  async set(k, v){
+    try { const db = await this.db(); await new Promise((res, rej) => { const t = db.transaction('kv', 'readwrite'); t.objectStore('kv').put(v, k); t.oncomplete = res; t.onerror = () => rej(t.error); }); }
+    catch(e){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(_){ toast('Speichern fehlgeschlagen'); } }
+  }
+};
+
+/* ================= Möbel-Katalog ================= */
+const rr = (x, y, w, h, r, fill, stroke, sw = 2, extra = '') => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}" fill="${fill}"${stroke ? ` stroke="${stroke}" stroke-width="${sw}"` : ''} ${extra}/>`;
+const circ = (x, y, r, fill, stroke, sw = 2, extra = '') => `<circle cx="${x}" cy="${y}" r="${r}" fill="${fill}"${stroke ? ` stroke="${stroke}" stroke-width="${sw}"` : ''} ${extra}/>`;
+
+function drawSofa(w, h, color = '#9fbfb0', dark = '#7fa392', seats){
+  const arm = Math.min(w * 0.13, 26), back = h * 0.3;
+  let s = rr(-w/2, -h/2, w, h, 12, dark);
+  s += rr(-w/2 + arm, -h/2 + back, w - 2*arm, h - back - 4, 6, color);
+  const n = seats || (w > 150 ? 3 : w > 110 ? 2 : 1); const cw = (w - 2*arm) / n;
+  for (let i = 1; i < n; i++) s += `<line x1="${-w/2 + arm + i*cw}" y1="${-h/2 + back + 6}" x2="${-w/2 + arm + i*cw}" y2="${h/2 - 10}" stroke="${dark}" stroke-width="2" stroke-linecap="round" opacity=".6"/>`;
+  return s;
+}
+const CATALOG = [
+  {cat:'Sitzen', items:[
+    {type:'sofa', name:'Sofa', w:200, h:90, draw:(w,h)=>drawSofa(w,h)},
+    {type:'sessel', name:'Sessel', w:90, h:85, draw:(w,h)=>drawSofa(w,h,'#e8b4a0','#d39882',1)},
+    {type:'stuhl', name:'Stuhl', w:40, h:40, noArea:true, draw:(w,h)=> rr(-w/2,-h/2+h*.22,w,h*.78,6,'#f2cc8f','#ddb06d') + rr(-w/2,-h/2,w,h*.24,4,'#ddb06d')},
+    {type:'bank', name:'Bank', w:150, h:40, draw:(w,h)=> rr(-w/2,-h/2,w,h,6,'#d9b48f','#b98d66') + `<line x1="${-w/2+6}" y1="0" x2="${w/2-6}" y2="0" stroke="#b98d66" stroke-width="2" opacity=".5"/>`},
+    {type:'sitzkissen', name:'Sitzkissen', w:50, h:50, draw:(w,h)=> `<ellipse rx="${w/2}" ry="${h/2}" fill="#9c89b8"/><ellipse rx="${w/2-8}" ry="${h/2-8}" fill="none" stroke="#fff" stroke-width="2" opacity=".5"/>`},
+  ]},
+  {cat:'Tische', items:[
+    {type:'tisch', name:'Tisch', w:160, h:80, draw:(w,h)=> rr(-w/2,-h/2,w,h,8,'#e3c4a2','#c49c74') + rr(-w/2+8,-h/2+8,w-16,h-16,4,'none','#c49c74',1.2,'opacity=".5"')},
+    {type:'tischrund', name:'Runder Tisch', w:110, h:110, draw:(w,h)=> `<ellipse rx="${w/2}" ry="${h/2}" fill="#e3c4a2" stroke="#c49c74" stroke-width="2"/><ellipse rx="${w/2-9}" ry="${h/2-9}" fill="none" stroke="#c49c74" stroke-width="1.2" opacity=".5"/>`},
+    {type:'maltisch', name:'Maltisch', w:140, h:80, draw:(w,h)=> rr(-w/2,-h/2,w,h,8,'#f4efe6','#cdbfae') + circ(-w*.25,-h*.12,9,'#e07a5f') + circ(-w*.05,h*.15,7,'#3d5a80') + circ(w*.2,-h*.1,8,'#e9b44c') + circ(w*.32,h*.2,6,'#81b29a') + rr(-w*.42,h*.05,w*.22,h*.28,3,'#fff','#ddd',1)},
+  ]},
+  {cat:'Teppiche', items:[
+    {type:'teppich', name:'Teppich', w:250, h:180, rug:true, draw:(w,h)=> rr(-w/2,-h/2,w,h,10,'#efd3c8') + rr(-w/2+12,-h/2+12,w-24,h-24,6,'none','#fff',2.5,'stroke-dasharray="10 8" opacity=".8"')},
+    {type:'teppichrund', name:'Runder Teppich', w:220, h:220, rug:true, draw:(w,h)=> `<ellipse rx="${w/2}" ry="${h/2}" fill="#cfe1d6"/><ellipse rx="${w/2-14}" ry="${h/2-14}" fill="none" stroke="#fff" stroke-width="2.5" stroke-dasharray="10 8" opacity=".9"/><ellipse rx="${w/4}" ry="${h/4}" fill="none" stroke="#fff" stroke-width="2.5" opacity=".6"/>`},
+    {type:'teppichbunt', name:'Streifenteppich', w:240, h:160, rug:true, draw:(w,h)=>{ const cols=['#f6d6c8','#f8e6c4','#d6e6dc','#d4deeb']; const n=8, sw=w/n; let s=`<clipPath id="cp"><rect x="${-w/2}" y="${-h/2}" width="${w}" height="${h}" rx="10"/></clipPath><g>`; for(let i=0;i<n;i++) s+=`<rect x="${-w/2+i*sw}" y="${-h/2}" width="${sw+.5}" height="${h}" fill="${cols[i%4]}"/>`; return s+`</g>` + rr(-w/2,-h/2,w,h,10,'none','#fff',2,'opacity=".6"'); }},
+    {type:'bauteppich', name:'Bauteppich', w:200, h:150, rug:true, draw:(w,h)=>{ let s=rr(-w/2,-h/2,w,h,8,'#d4deeb'); for(let x=-w/2+25;x<w/2;x+=25) s+=`<line x1="${x}" y1="${-h/2}" x2="${x}" y2="${h/2}" stroke="#fff" stroke-width="1.5" opacity=".7"/>`; for(let y=-h/2+25;y<h/2;y+=25) s+=`<line x1="${-w/2}" y1="${y}" x2="${w/2}" y2="${y}" stroke="#fff" stroke-width="1.5" opacity=".7"/>`; return s; }},
+  ]},
+  {cat:'Spielen', items:[
+    {type:'kuschel', name:'Kuschelecke', w:180, h:140, draw:(w,h)=> rr(-w/2,-h/2,w,h,16,'#d9c8e3','#c0a9cf') + rr(-w/2+10,-h/2+10,w*.32,h*.3,12,'#efe4f4') + rr(w/2-10-w*.3,-h/2+12,w*.3,h*.28,12,'#f6dfe5') + circ(0,h*.12,h*.14,'#efe4f4')},
+    {type:'kueche', name:'Spielküche', w:120, h:60, draw:(w,h)=> rr(-w/2,-h/2,w,h,6,'#f7f3ea','#c9bba7') + circ(-w*.25,0,h*.2,'none','#8a8178',2.5) + circ(-w*.25,0,h*.08,'#8a8178') + rr(w*.05,-h*.28,w*.36,h*.56,6,'#cfe3ee','#9cbccd')},
+    {type:'bausteine', name:'Bausteine', w:70, h:70, draw:(w,h)=> rr(-w/2,-h/2,w,h,8,'#f0e6d8','#d8c8b2') + rr(-w*.36,-w*.34,w*.3,w*.2,3,'#e07a5f') + rr(w*.02,-w*.36,w*.2,w*.3,3,'#3d5a80') + rr(-w*.3,w*.06,w*.24,w*.24,3,'#e9b44c') + rr(w*.04,w*.04,w*.32,w*.2,3,'#81b29a')},
+    {type:'puppenecke', name:'Puppenbett', w:90, h:60, draw:(w,h)=> rr(-w/2,-h/2,w,h,8,'#e8b4a0','#cf9a85') + rr(-w/2+6,-h/2+6,w*.28,h-12,6,'#fff') + rr(-w/2+w*.36,-h/2+6,w*.56,h-12,6,'#f6dfe5')},
+    {type:'staffelei', name:'Staffelei', w:70, h:45, draw:(w,h)=> rr(-w/2,-h/2,w,h*.35,4,'#fff','#cdbfae') + `<path d="M${-w*.4} ${h/2} L0 ${-h*.1} L${w*.4} ${h/2}" fill="none" stroke="#b98d66" stroke-width="4" stroke-linecap="round"/>`},
+    {type:'buecher', name:'Bücherkiste', w:80, h:50, draw:(w,h)=>{ let s=rr(-w/2,-h/2,w,h,6,'#d9b48f','#b98d66'); const cols=['#e07a5f','#3d5a80','#e9b44c','#81b29a','#b5838d','#6d9dc5']; const n=6,bw=(w-14)/n; for(let i=0;i<n;i++) s+=rr(-w/2+7+i*bw,-h/2+7,bw-2,h-14,2,cols[i]); return s; }},
+    {type:'hochebene', name:'Hochebene', w:220, h:160, draw:(w,h)=> rr(-w/2,-h/2,w,h,10,'rgba(181,131,141,.14)','#b5838d',2.5,'stroke-dasharray="12 8"') + `<g stroke="#b5838d" stroke-width="3" stroke-linecap="round"><line x1="${w/2-40}" y1="${h/2}" x2="${w/2-40}" y2="${h/2-50}"/><line x1="${w/2-15}" y1="${h/2}" x2="${w/2-15}" y2="${h/2-50}"/><line x1="${w/2-40}" y1="${h/2-14}" x2="${w/2-15}" y2="${h/2-14}"/><line x1="${w/2-40}" y1="${h/2-30}" x2="${w/2-15}" y2="${h/2-30}"/></g>`},
+  ]},
+  {cat:'Raum', items:[
+    {type:'regal', name:'Regal', w:160, h:40, draw:(w,h)=>{ let s=rr(-w/2,-h/2,w,h,4,'#d9b48f','#b98d66'); const n=Math.max(2,Math.round(w/40)), cw=w/n, cols=['#e07a5f','#81b29a','#e9b44c','#6d9dc5']; for(let i=0;i<n;i++){ if(i) s+=`<line x1="${-w/2+i*cw}" y1="${-h/2}" x2="${-w/2+i*cw}" y2="${h/2}" stroke="#b98d66" stroke-width="2"/>`; s+=rr(-w/2+i*cw+6,-h/2+6,cw-12,h-12,3,cols[i%4],null,0,'opacity=".75"'); } return s; }},
+    {type:'garderobe', name:'Garderobe', w:180, h:35, draw:(w,h)=>{ let s=rr(-w/2,-h/2,w,h,4,'#e8ddd0','#c9bba7'); for(let x=-w/2+20;x<w/2-10;x+=30) s+=circ(x,0,5,'#b98d66'); return s; }},
+    {type:'pflanze', name:'Pflanze', w:55, h:55, draw:(w,h)=>{ let s=circ(0,0,w*.32,'#d08c60'); for(let i=0;i<6;i++){ s+=`<ellipse cx="0" cy="${-w*.25}" rx="${w*.13}" ry="${w*.25}" fill="${i%2?'#81b29a':'#6a9c82'}" transform="rotate(${i*60})"/>`; } return s + circ(0,0,w*.1,'#5c8a72'); }},
+    {type:'tuer', name:'Tür', w:90, h:90, noArea:true, draw:(w,h)=> `<rect x="${-w/2}" y="${h/2-6}" width="${w}" height="10" fill="#f6f1ea"/><path d="M${-w/2} ${h/2} A${w} ${h} 0 0 1 ${w/2} ${h/2-h}" fill="none" stroke="#b9a996" stroke-width="1.5" stroke-dasharray="5 5" transform="translate(0,0)"/><line x1="${-w/2}" y1="${h/2}" x2="${-w/2}" y2="${-h/2}" stroke="#8a7a68" stroke-width="5" stroke-linecap="round"/>`},
+    {type:'fenster', name:'Fenster', w:130, h:14, noArea:true, draw:(w,h)=> rr(-w/2,-h/2,w,h,2,'#dcebf3','#9cbccd') + `<line x1="0" y1="${-h/2}" x2="0" y2="${h/2}" stroke="#9cbccd" stroke-width="2"/>`},
+    {type:'waschbecken', name:'Waschbecken', w:70, h:50, draw:(w,h)=> rr(-w/2,-h/2,w,h,8,'#f2f2f0','#c9c4bc') + `<ellipse rx="${w*.32}" ry="${h*.28}" cy="${h*.06}" fill="#dcebf3" stroke="#9cbccd" stroke-width="1.5"/>` + circ(0,-h*.34,3,'#9a948c')},
+  ]},
+];
+const CAT = {}; CATALOG.forEach(c => c.items.forEach(i => CAT[i.type] = i));
+
+/* ================= State ================= */
+const W0 = 900, H0 = 650;
+function defaultState(){
+  const f = (type, x, y, rot = 0, extra = {}) => ({id:uid(), type, x, y, rot, w:CAT[type].w, h:CAT[type].h, ...extra});
+  return {
+    v:1, room:{name:'Gruppenraum', w:W0, h:H0}, mode:'kids',
+    furniture:[
+      f('teppichrund', 610, 430),
+      f('bauteppich', 160, 470),
+      f('fenster', 300, 7), f('fenster', 560, 7),
+      f('tuer', 60, H0-45),
+      f('sofa', 610, H0-52, 180),
+      f('tisch', 360, 230), f('stuhl', 320, 172), f('stuhl', 400, 172), f('stuhl', 320, 288, 180), f('stuhl', 400, 288, 180),
+      f('regal', 130, 26, 0, {w:180}),
+      f('kueche', W0-38, 170, 90),
+      f('kuschel', 805, 410, 90, {name:'Kuschelecke'}),
+      f('bausteine', 160, 470),
+      f('pflanze', W0-34, 34),
+      f('maltisch', 600, 120),
+    ],
+    kids:[], snapshots:[]
+  };
+}
+let state = null;
+const ui = { selected:null, viewing:null, scale:1 };
+
+let saveT;
+function save(){ clearTimeout(saveT); saveT = setTimeout(() => Store.set('state', state), 250); }
+
+/* ================= Rendering ================= */
+const svg = $('#room'), stage = $('#stage');
+const PAD = 16;
+
+function kidR(){ return 27 / ui.scale; }
+
+function furnSVG(f){
+  const t = CAT[f.type]; if (!t) return '';
+  const sel = ui.selected === f.id && !ui.viewing;
+  const locked = state.mode !== 'furnish' || ui.viewing;
+  return `<g data-kind="f" data-id="${f.id}" transform="translate(${f.x} ${f.y}) rotate(${f.rot})" class="${locked ? 'furn-locked' : ''}">
+    <g ${t.rug ? '' : 'filter="url(#sh)"'}>${t.draw(f.w, f.h).replace(/id="cp"/g, `id="cp${f.id}"`).replace(/<g>/, `<g clip-path="url(#cp${f.id})">`)}</g>
+    ${locked ? '' : `<rect x="${-f.w/2 - 8}" y="${-f.h/2 - 8}" width="${f.w + 16}" height="${f.h + 16}" fill="transparent"/>`}
+    ${sel ? `<rect class="sel-outline" x="${-f.w/2 - 6}" y="${-f.h/2 - 6}" width="${f.w + 12}" height="${f.h + 12}" rx="8" stroke-width="${2/ui.scale}"/>` : ''}
+  </g>`;
+}
+
+function kidSVG(k, pos, interactive){
+  const R = kidR(), fs = 12 / ui.scale;
+  const inner = k.photo
+    ? `<circle r="${R}" fill="#eee"/><image href="${k.photo}" x="${-R}" y="${-R}" width="${2*R}" height="${2*R}" clip-path="url(#kidclip)" preserveAspectRatio="xMidYMid slice"/>`
+    : `<circle r="${R}" fill="${k.color || KID_COLORS[0]}"/><text text-anchor="middle" dy="0.35em" font-size="${R*0.75}" font-weight="700" fill="#fff">${esc(initials(k.name))}</text>`;
+  return `<g data-kind="k" data-id="${k.id}" transform="translate(${pos.x} ${pos.y})" ${interactive ? '' : 'style="pointer-events:none"'}>
+    <g><circle r="${R + 3/ui.scale}" fill="#fff" filter="url(#ksh)"/>${inner}
+    <text class="kidname" y="${R + fs*1.35}" text-anchor="middle" font-size="${fs}" paint-order="stroke" stroke="#fff" stroke-width="${3.5/ui.scale}" stroke-linejoin="round">${esc(k.name)}</text></g>
+  </g>`;
+}
+
+function computeScale(){
+  const r = stage.getBoundingClientRect();
+  const vw = state.room.w + 2*PAD, vh = state.room.h + 2*PAD;
+  ui.scale = Math.min(r.width / vw, r.height / vh) || 1;
+}
+
+function render(){
+  computeScale();
+  const {w, h} = state.room;
+  svg.setAttribute('viewBox', `${-PAD} ${-PAD} ${w + 2*PAD} ${h + 2*PAD}`);
+  const rugs = state.furniture.filter(f => CAT[f.type]?.rug), rest = state.furniture.filter(f => !CAT[f.type]?.rug);
+  let kidsHTML = '';
+  if (ui.viewing){
+    const byId = Object.fromEntries(state.kids.map(k => [k.id, k]));
+    ui.viewing.kids.forEach(p => { const k = byId[p.id]; if (k) kidsHTML += kidSVG(k, p, false); });
+  } else {
+    state.kids.filter(k => k.placed).forEach(k => kidsHTML += kidSVG(k, k, true));
+  }
+  svg.innerHTML = `
+  <defs>
+    <pattern id="floor" width="120" height="24" patternUnits="userSpaceOnUse">
+      <rect width="120" height="24" fill="#f4ead9"/>
+      <path d="M0 23.5H120M60 0V24" stroke="#e9dcc6" stroke-width="1"/>
+    </pattern>
+    <clipPath id="kidclip" clipPathUnits="objectBoundingBox"><circle cx=".5" cy=".5" r=".5"/></clipPath>
+    <filter id="sh" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#5a4028" flood-opacity=".18"/></filter>
+    <filter id="ksh" x="-50%" y="-50%" width="200%" height="200%"><feDropShadow dx="0" dy="${1.5/ui.scale}" stdDeviation="${2.5/ui.scale}" flood-color="#000" flood-opacity=".28"/></filter>
+  </defs>
+  <rect x="-6" y="-6" width="${w + 12}" height="${h + 12}" rx="10" fill="var(--wall)"/>
+  <rect x="0" y="0" width="${w}" height="${h}" rx="4" fill="url(#floor)" data-floor="1"/>
+  <g id="lRug">${rugs.map(furnSVG).join('')}</g>
+  <g id="lFurn">${rest.map(furnSVG).join('')}</g>
+  <g id="lKids">${kidsHTML}</g>`;
+  renderTray();
+  updateSelTools();
+  updateHeader();
+}
+
+function avatarHTML(k){
+  return `<div class="av" style="background:${k.color || KID_COLORS[0]}">${k.photo ? `<img src="${k.photo}" alt="">` : esc(initials(k.name))}</div>`;
+}
+function renderTray(){
+  const list = $('#trayList');
+  if (!state.kids.length){ list.innerHTML = `<div class="trayEmpty">Tippe auf +, um ein Kind hinzuzufügen.</div>`; return; }
+  const sorted = [...state.kids].sort((a, b) => (a.placed - b.placed) || a.name.localeCompare(b.name, 'de'));
+  list.innerHTML = sorted.map(k => `<div class="trayKid ${k.placed ? 'placed' : ''}" data-id="${k.id}">${avatarHTML(k)}<div class="nm">${esc(k.name)}</div></div>`).join('');
+}
+function updateHeader(){
+  $('#roomName').textContent = state.room.name || 'Gruppenraum';
+  const placed = state.kids.filter(k => k.placed).length;
+  $('#roomSub').textContent = state.kids.length ? `${placed} von ${state.kids.length} Kindern im Raum` : 'Noch keine Kinder';
+  document.querySelectorAll('#modeSeg button').forEach(b => b.classList.toggle('on', b.dataset.mode === state.mode));
+  $('#furnBtn').classList.toggle('hide', state.mode !== 'furnish');
+  const v = ui.viewing;
+  $('#banner').classList.toggle('hide', !v);
+  if (v) $('#bannerText').textContent = `${v.label ? v.label + ' · ' : ''}${fmtTime(v.time)}`;
+}
+
+/* ---------- Selection toolbar ---------- */
+function updateSelTools(){
+  const tools = $('#selTools');
+  const f = state.furniture.find(x => x.id === ui.selected);
+  if (!f || state.mode !== 'furnish' || ui.viewing){ tools.classList.add('hide'); return; }
+  const el = svg.querySelector(`[data-kind="f"][data-id="${f.id}"]`); if (!el){ tools.classList.add('hide'); return; }
+  const b = el.getBoundingClientRect(), s = stage.getBoundingClientRect();
+  tools.classList.remove('hide');
+  let x = b.left + b.width/2 - s.left, y = b.top - s.top - 10;
+  const tw = tools.offsetWidth, th = tools.offsetHeight;
+  if (y - th < 0){ y = b.bottom - s.top + 10 + th; }
+  x = clamp(x, tw/2 + 4, s.width - tw/2 - 4);
+  tools.style.left = x + 'px'; tools.style.top = y + 'px';
+}
+
+/* ================= Interaction: Raum ================= */
+function toRoom(cx, cy){
+  const pt = svg.createSVGPoint(); pt.x = cx; pt.y = cy;
+  const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+  return {x:p.x, y:p.y};
+}
+function overTray(cx, cy){ const r = $('#tray').getBoundingClientRect(); return cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom; }
+function overRoom(cx, cy){
+  const r = svg.getBoundingClientRect(); if (cx < r.left || cx > r.right || cy < r.top || cy > r.bottom) return false;
+  const p = toRoom(cx, cy); return p.x >= -PAD && p.y >= -PAD && p.x <= state.room.w + PAD && p.y <= state.room.h + PAD;
+}
+
+const drags = new Map();
+svg.addEventListener('pointerdown', e => {
+  if (ui.viewing) return;
+  const g = e.target.closest('[data-kind]');
+  if (!g){ if (ui.selected){ ui.selected = null; render(); } return; }
+  const kind = g.dataset.kind, id = g.dataset.id;
+  const obj = kind === 'k' ? state.kids.find(k => k.id === id) : state.furniture.find(f => f.id === id);
+  if (!obj) return;
+  e.preventDefault();
+  const p = toRoom(e.clientX, e.clientY);
+  if (kind === 'f' && ui.selected !== id){ ui.selected = id; render(); }
+  const el = svg.querySelector(`[data-kind="${kind}"][data-id="${id}"]`);
+  if (kind === 'k') el.parentNode.appendChild(el);
+  drags.set(e.pointerId, {kind, id, obj, el, dx:p.x - obj.x, dy:p.y - obj.y, sx:e.clientX, sy:e.clientY, moved:false});
+  try { svg.setPointerCapture(e.pointerId); } catch(_){}
+});
+svg.addEventListener('pointermove', e => {
+  const d = drags.get(e.pointerId); if (!d) return;
+  if (!d.moved && Math.hypot(e.clientX - d.sx, e.clientY - d.sy) > 6){ d.moved = true; if (d.kind === 'f') $('#selTools').classList.add('hide'); }
+  if (!d.moved) return;
+  const p = toRoom(e.clientX, e.clientY);
+  d.obj.x = clamp(p.x - d.dx, 0, state.room.w); d.obj.y = clamp(p.y - d.dy, 0, state.room.h);
+  d.el.setAttribute('transform', d.kind === 'f' ? `translate(${d.obj.x} ${d.obj.y}) rotate(${d.obj.rot})` : `translate(${d.obj.x} ${d.obj.y})`);
+  if (d.kind === 'k') $('#tray').classList.toggle('drop', overTray(e.clientX, e.clientY));
+});
+function endDrag(e, cancelled){
+  const d = drags.get(e.pointerId); if (!d) return;
+  drags.delete(e.pointerId);
+  $('#tray').classList.remove('drop');
+  if (!d.moved){
+    if (!cancelled && d.kind === 'k') openKidSheet(d.id);
+    else updateSelTools();
+    return;
+  }
+  if (d.kind === 'k' && overTray(e.clientX, e.clientY)){ d.obj.placed = false; render(); }
+  else if (d.kind === 'k') renderTray();
+  updateSelTools(); save();
+}
+svg.addEventListener('pointerup', e => endDrag(e, false));
+svg.addEventListener('pointercancel', e => endDrag(e, true));
+
+/* ---------- Tray drag ---------- */
+let trayDrag = null;
+const tray = $('#trayList');
+tray.addEventListener('pointerdown', e => {
+  const it = e.target.closest('.trayKid'); if (!it || ui.viewing || trayDrag) return;
+  trayDrag = {id:it.dataset.id, pid:e.pointerId, sx:e.clientX, sy:e.clientY, moved:false, ghost:null, it};
+  try { it.setPointerCapture(e.pointerId); } catch(_){}
+});
+tray.addEventListener('pointermove', e => {
+  const d = trayDrag; if (!d || d.pid !== e.pointerId) return;
+  if (!d.moved && Math.hypot(e.clientX - d.sx, e.clientY - d.sy) > 8){
+    d.moved = true;
+    const k = state.kids.find(k => k.id === d.id);
+    d.ghost = document.createElement('div'); d.ghost.className = 'ghost'; d.ghost.innerHTML = avatarHTML(k);
+    document.body.appendChild(d.ghost);
+  }
+  if (d.ghost){ d.ghost.style.left = e.clientX + 'px'; d.ghost.style.top = e.clientY + 'px'; }
+});
+function endTray(e, cancelled){
+  const d = trayDrag; if (!d || d.pid !== e.pointerId) return;
+  trayDrag = null; d.ghost?.remove();
+  if (cancelled) return;
+  if (!d.moved){ openKidSheet(d.id); return; }
+  if (overRoom(e.clientX, e.clientY)){
+    const k = state.kids.find(k => k.id === d.id), p = toRoom(e.clientX, e.clientY);
+    k.x = clamp(p.x, 0, state.room.w); k.y = clamp(p.y, 0, state.room.h); k.placed = true;
+    render(); save();
+  }
+}
+tray.addEventListener('pointerup', e => endTray(e, false));
+tray.addEventListener('pointercancel', e => endTray(e, true));
+
+/* ---------- Selection toolbar actions ---------- */
+$('#selTools').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const f = state.furniture.find(x => x.id === ui.selected); if (!f) return;
+  const a = b.dataset.act;
+  if (a === 'rotl') f.rot = (f.rot - 45 + 360) % 360;
+  if (a === 'rotr') f.rot = (f.rot + 45) % 360;
+  if (a === 'bigger' || a === 'smaller'){ const s = a === 'bigger' ? 1.1 : 1/1.1; f.w = clamp(Math.round(f.w*s), 10, 800); f.h = clamp(Math.round(f.h*s), 8, 800); }
+  if (a === 'dup'){ const n = {...f, id:uid(), x:clamp(f.x + 30, 0, state.room.w), y:clamp(f.y + 30, 0, state.room.h)}; state.furniture.push(n); ui.selected = n.id; }
+  if (a === 'rename'){ const n = prompt('Name für diesen Bereich (z. B. „Bauecke“):', f.name || CAT[f.type].name); if (n !== null) f.name = n.trim(); }
+  if (a === 'del'){ state.furniture = state.furniture.filter(x => x.id !== f.id); ui.selected = null; }
+  render(); save();
+});
+
+/* ================= Bereichserkennung ================= */
+function areaAt(x, y){
+  let best = null, bestA = Infinity;
+  for (const f of state.furniture){
+    const t = CAT[f.type]; if (!t || t.noArea) continue;
+    const a = -f.rot * Math.PI / 180, dx = x - f.x, dy = y - f.y;
+    const lx = dx*Math.cos(a) - dy*Math.sin(a), ly = dx*Math.sin(a) + dy*Math.cos(a), m = 35;
+    if (Math.abs(lx) <= f.w/2 + m && Math.abs(ly) <= f.h/2 + m){ const ar = f.w*f.h; if (ar < bestA){ bestA = ar; best = f; } }
+  }
+  return best ? (best.name || CAT[best.type].name) : 'Im Raum';
+}
+
+/* ================= Sheets & Drawers ================= */
+let openSheetEl = null;
+function showSheet(el){ closeAll(); openSheetEl = el; $('#scrim').classList.add('on'); el.classList.add('on'); }
+function closeAll(){
+  document.querySelectorAll('.sheet.on, .drawer.open').forEach(x => x.classList.remove('on', 'open'));
+  $('#scrim').classList.remove('on'); openSheetEl = null;
+  if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+}
+function showDrawer(el){ closeAll(); $('#scrim').classList.add('on'); el.classList.add('open'); }
+$('#scrim').addEventListener('click', closeAll);
+document.querySelectorAll('[data-close],[data-cancel]').forEach(b => b.addEventListener('click', closeAll));
+
+/* ---------- Kind ---------- */
+let kidDraft = null;
+function openKidSheet(id, {camera = false} = {}){
+  const k = id ? state.kids.find(k => k.id === id) : null;
+  kidDraft = k ? {...k} : {id:null, name:'', photo:null, color:KID_COLORS[state.kids.length % KID_COLORS.length]};
+  $('#kidSheetTitle').textContent = k ? (k.name || 'Kind') : 'Kind hinzufügen';
+  $('#kidName').value = kidDraft.name;
+  $('#kidDelete').classList.toggle('hide', !k);
+  $('#kidUnplace').classList.toggle('hide', !(k && k.placed));
+  // Verlauf des Kindes
+  const hist = k ? state.snapshots.map(s => ({s, p:s.kids.find(p => p.id === k.id)})).filter(x => x.p).slice(0, 8) : [];
+  $('#kidHistWrap').classList.toggle('hide', !hist.length);
+  $('#kidHist').innerHTML = hist.map(({s, p}) => `<div><span>${esc(fmtTime(s.time))}${s.label ? ' · ' + esc(s.label) : ''}</span><span>${esc(p.area)}</span></div>`).join('');
+  refreshKidPhoto();
+  showSheet($('#kidSheet'));
+  if (camera) $('#camInput').click();
+}
+function refreshKidPhoto(){
+  const b = $('#kidPhoto');
+  b.classList.toggle('has', !!kidDraft.photo);
+  b.querySelector('img')?.remove();
+  if (kidDraft.photo){ const i = document.createElement('img'); i.src = kidDraft.photo; b.appendChild(i); }
+  $('#kidNoPhoto').classList.toggle('hide', !kidDraft.photo);
+  $('#kidColorWrap').classList.toggle('hide', !!kidDraft.photo);
+  $('#kidColors').innerHTML = KID_COLORS.map(c => `<button data-c="${c}" class="${c === kidDraft.color ? 'on' : ''}" style="background:${c}"></button>`).join('');
+}
+$('#kidColors').addEventListener('click', e => { const b = e.target.closest('button'); if (b){ kidDraft.color = b.dataset.c; refreshKidPhoto(); } });
+$('#kidPhoto').addEventListener('click', () => $('#camInput').click());
+$('#kidCam').addEventListener('click', () => $('#camInput').click());
+$('#kidLib').addEventListener('click', () => $('#libInput').click());
+$('#kidNoPhoto').addEventListener('click', () => { kidDraft.photo = null; refreshKidPhoto(); });
+
+async function fileToAvatar(file){
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
+    const S = 320, c = document.createElement('canvas'); c.width = c.height = S;
+    const side = Math.min(img.naturalWidth, img.naturalHeight);
+    // Gesichter sitzen meist etwas oberhalb der Mitte
+    const sx = (img.naturalWidth - side)/2, sy = Math.max(0, (img.naturalHeight - side) * 0.35);
+    c.getContext('2d').drawImage(img, sx, sy, side, side, 0, 0, S, S);
+    return c.toDataURL('image/jpeg', 0.82);
+  } finally { URL.revokeObjectURL(url); }
+}
+for (const inp of [$('#camInput'), $('#libInput')]){
+  inp.addEventListener('change', async () => {
+    const f = inp.files[0]; inp.value = ''; if (!f || !kidDraft) return;
+    try { kidDraft.photo = await fileToAvatar(f); refreshKidPhoto(); if (!$('#kidName').value) $('#kidName').focus(); }
+    catch(e){ toast('Foto konnte nicht geladen werden'); }
+  });
+}
+$('#kidName').addEventListener('keydown', e => { if (e.key === 'Enter') $('#kidSave').click(); });
+$('#kidSave').addEventListener('click', () => {
+  const name = $('#kidName').value.trim();
+  if (!name){ $('#kidName').focus(); toast('Bitte einen Namen eingeben'); return; }
+  if (kidDraft.id){ const k = state.kids.find(k => k.id === kidDraft.id); Object.assign(k, {name, photo:kidDraft.photo, color:kidDraft.color}); }
+  else state.kids.push({id:uid(), name, photo:kidDraft.photo, color:kidDraft.color, x:0, y:0, placed:false});
+  closeAll(); render(); save();
+  if (!kidDraft.id) toast(`${name} ist in der Leiste – jetzt in den Raum ziehen`);
+});
+$('#kidDelete').addEventListener('click', () => {
+  const k = state.kids.find(k => k.id === kidDraft.id); if (!k) return;
+  if (!confirm(`${k.name} wirklich löschen?`)) return;
+  state.kids = state.kids.filter(x => x.id !== k.id); closeAll(); render(); save();
+});
+$('#kidUnplace').addEventListener('click', () => { const k = state.kids.find(k => k.id === kidDraft.id); if (k) k.placed = false; closeAll(); render(); save(); });
+$('#addKidBtn').addEventListener('click', () => { if (ui.viewing) return; openKidSheet(null, {camera:true}); });
+
+/* ---------- Modus ---------- */
+$('#modeSeg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  state.mode = b.dataset.mode; ui.selected = null; ui.viewing = null; render(); save();
+});
+
+/* ---------- Möbel-Katalog ---------- */
+function buildCatalog(){
+  $('#catBody').innerHTML = CATALOG.map(c => `<div class="cat"><h3>${c.cat}</h3><div class="grid">${c.items.map(i => {
+    const m = Math.max(i.w, i.h) * 1.1;
+    return `<button class="tile" data-type="${i.type}"><svg viewBox="${-m/2} ${-m/2 * 0.82} ${m} ${m * 0.82}">${i.draw(i.w, i.h).replace(/id="cp"/g, `id="cpc${i.type}"`).replace(/<g>/, `<g clip-path="url(#cpc${i.type})">`)}</svg>${i.name}</button>`;
+  }).join('')}</div></div>`).join('');
+}
+$('#catBody').addEventListener('click', e => {
+  const b = e.target.closest('.tile'); if (!b) return;
+  const t = CAT[b.dataset.type];
+  const f = {id:uid(), type:t.type, x:state.room.w/2 + (Math.random()*60 - 30), y:state.room.h/2 + (Math.random()*60 - 30), rot:0, w:t.w, h:t.h};
+  state.furniture.push(f); ui.selected = f.id; closeAll(); render(); save();
+});
+$('#furnBtn').addEventListener('click', () => showDrawer($('#catDrawer')));
+
+/* ---------- Ansicht merken ---------- */
+const CHIPS = ['Morgenkreis', 'Freispiel', 'Frühstück', 'Mittag', 'Nachmittag'];
+$('#snapChips').innerHTML = CHIPS.map(c => `<button class="pill" data-v="${c}">${c}</button>`).join('');
+$('#snapChips').addEventListener('click', e => { const b = e.target.closest('button'); if (b) $('#snapLabel').value = b.dataset.v; });
+$('#snapBtn').addEventListener('click', () => {
+  if (!state.kids.some(k => k.placed)){ toast('Noch kein Kind im Raum'); return; }
+  $('#snapLabel').value = ''; showSheet($('#snapSheet'));
+});
+$('#snapLabel').addEventListener('keydown', e => { if (e.key === 'Enter') $('#snapSave').click(); });
+$('#snapSave').addEventListener('click', () => {
+  const kids = state.kids.filter(k => k.placed).map(k => ({id:k.id, x:Math.round(k.x), y:Math.round(k.y), area:areaAt(k.x, k.y)}));
+  state.snapshots.unshift({id:uid(), time:Date.now(), label:$('#snapLabel').value.trim(), kids});
+  closeAll(); save(); toast('Ansicht gemerkt');
+});
+
+/* ---------- Verlauf ---------- */
+function renderHistory(){
+  const b = $('#histBody');
+  if (!state.snapshots.length){ b.innerHTML = `<p class="muted">Noch keine gemerkten Ansichten. Tippe oben auf „Ansicht merken“, um festzuhalten, wo die Kinder gerade spielen.</p>`; return; }
+  let lastDay = '';
+  b.innerHTML = state.snapshots.map(s => {
+    const day = new Date(s.time).toLocaleDateString('de-DE', {weekday:'long', day:'numeric', month:'long'});
+    const head = day !== lastDay ? `<div class="cat"><h3>${day}</h3></div>` : ''; lastDay = day;
+    const t = new Date(s.time).toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'});
+    return `${head}<div class="snap" data-id="${s.id}"><div class="info"><b>${t} Uhr${s.label ? ' · ' + esc(s.label) : ''}</b><span>${s.kids.length} Kinder</span></div><button data-a="view">Ansehen</button><button class="del" data-a="del" aria-label="Löschen">✕</button></div>`;
+  }).join('');
+}
+$('#histBtn').addEventListener('click', () => { renderHistory(); showDrawer($('#histDrawer')); });
+$('#histBody').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const id = b.closest('.snap').dataset.id, s = state.snapshots.find(x => x.id === id);
+  if (b.dataset.a === 'view'){ ui.viewing = s; ui.selected = null; closeAll(); render(); }
+  if (b.dataset.a === 'del' && confirm('Diese Ansicht löschen?')){ state.snapshots = state.snapshots.filter(x => x.id !== id); save(); renderHistory(); }
+});
+$('#unviewBtn').addEventListener('click', () => { ui.viewing = null; render(); });
+$('#restoreBtn').addEventListener('click', () => {
+  const s = ui.viewing; if (!s) return;
+  const pos = Object.fromEntries(s.kids.map(p => [p.id, p]));
+  state.kids.forEach(k => { const p = pos[k.id]; if (p){ k.x = p.x; k.y = p.y; k.placed = true; } else k.placed = false; });
+  ui.viewing = null; render(); save(); toast('Ansicht wiederhergestellt');
+});
+
+/* ---------- Menü ---------- */
+function openMenu(){
+  $('#roomNameInput').value = state.room.name;
+  $('#roomW').value = state.room.w / 100; $('#roomH').value = state.room.h / 100;
+  showSheet($('#menuSheet'));
+}
+$('#menuBtn').addEventListener('click', openMenu);
+$('#titleBtn').addEventListener('click', openMenu);
+$('#menuDone').addEventListener('click', () => {
+  state.room.name = $('#roomNameInput').value.trim() || 'Gruppenraum';
+  const w = parseFloat($('#roomW').value), h = parseFloat($('#roomH').value);
+  if (w >= 3 && w <= 30) state.room.w = Math.round(w * 100);
+  if (h >= 3 && h <= 30) state.room.h = Math.round(h * 100);
+  [...state.furniture, ...state.kids].forEach(o => { o.x = clamp(o.x, 0, state.room.w); o.y = clamp(o.y, 0, state.room.h); });
+  closeAll(); render(); save();
+});
+$('#allToTray').addEventListener('click', () => { state.kids.forEach(k => k.placed = false); closeAll(); render(); save(); });
+$('#exportBtn').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(state)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `kita-raum-${new Date().toISOString().slice(0, 10)}.json`; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+});
+$('#importBtn').addEventListener('click', () => $('#importInput').click());
+$('#importInput').addEventListener('change', async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  try {
+    const s = JSON.parse(await f.text());
+    if (!s.room || !Array.isArray(s.kids) || !Array.isArray(s.furniture)) throw 0;
+    if (!confirm('Aktuelle Daten durch die Sicherung ersetzen?')) return;
+    state = {...defaultState(), ...s, snapshots:s.snapshots || []}; ui.viewing = null; ui.selected = null;
+    closeAll(); render(); save(); toast('Sicherung geladen');
+  } catch(_){ toast('Datei ist keine gültige Sicherung'); }
+});
+$('#resetBtn').addEventListener('click', () => {
+  if (!confirm('Wirklich alles löschen? Kinder, Fotos, Möbel und Verlauf gehen verloren.')) return;
+  state = defaultState(); ui.viewing = null; ui.selected = null; closeAll(); render(); save();
+});
+
+/* ================= Start ================= */
+document.addEventListener('gesturestart', e => e.preventDefault());
+document.addEventListener('dblclick', e => e.preventDefault());
+let rT; window.addEventListener('resize', () => { clearTimeout(rT); rT = setTimeout(render, 80); });
+
+(async function init(){
+  const s = await Store.get('state');
+  state = s && s.room ? {...defaultState(), ...s} : defaultState();
+  buildCatalog(); render();
+  if (navigator.storage?.persist) navigator.storage.persist().catch(() => {});
+  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+})();
+</script>
+</body>
+</html>
