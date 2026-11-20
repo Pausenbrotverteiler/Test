@@ -118,13 +118,8 @@ main{display:grid;grid-template-columns:96px 1fr;min-height:0;gap:0}
   box-shadow:0 20px 60px rgba(50,30,10,.3);padding:22px;transition:all .2s ease}
 .sheet.on{opacity:1;pointer-events:auto;transform:translate(-50%,-50%)}
 .sheet h2{margin:0 0 14px;font-size:20px}
-.photoBig{width:150px;height:150px;border-radius:50%;margin:0 auto 10px;display:grid;place-items:center;
-  background:#f3ece2;border:3px dashed #d8cbbb;overflow:hidden;color:var(--muted);font-weight:600;font-size:14px;position:relative}
-.photoBig img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
-.photoBig.has{border:4px solid #fff;box-shadow:0 4px 14px rgba(0,0,0,.15)}
-.photoBig .ph{display:flex;flex-direction:column;align-items:center;gap:6px}
-.photoBig .ph svg{width:34px;height:34px}
-.photoRow{display:flex;justify-content:center;gap:8px;margin-bottom:14px}
+.kidPreview{width:110px;height:110px;border-radius:50%;margin:4px auto 16px;display:grid;place-items:center;color:#fff;
+  font-weight:700;font-size:40px;border:4px solid #fff;box-shadow:0 4px 14px rgba(0,0,0,.15);transition:background .15s}
 .pill{padding:8px 14px;border-radius:999px;background:#f0e9df;font-weight:600;font-size:14px}
 .field{width:100%;padding:13px 14px;border-radius:12px;border:1.5px solid var(--line);background:#fff;font-size:17px;outline:none}
 .field:focus{border-color:var(--accent)}
@@ -219,14 +214,9 @@ main{display:grid;grid-template-columns:96px 1fr;min-height:0;gap:0}
 <!-- Kind -->
 <div class="sheet" id="kidSheet">
   <h2 id="kidSheetTitle">Kind hinzufügen</h2>
-  <button class="photoBig" id="kidPhoto"><div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg>Foto aufnehmen</div></button>
-  <div class="photoRow">
-    <button class="pill" id="kidCam">Kamera</button>
-    <button class="pill" id="kidLib">Aus Fotos</button>
-    <button class="pill hide" id="kidNoPhoto">Foto entfernen</button>
-  </div>
+  <div class="kidPreview" id="kidPreview">?</div>
   <input class="field" id="kidName" placeholder="Name des Kindes" autocomplete="off" enterkeyhint="done">
-  <div id="kidColorWrap"><div class="label">Farbe (wenn kein Foto)</div><div class="colors" id="kidColors"></div></div>
+  <div id="kidColorWrap"><div class="label">Farbe</div><div class="colors" id="kidColors"></div></div>
   <div id="kidHistWrap" class="hide"><div class="label">Zuletzt gespielt</div><div class="hist" id="kidHist"></div></div>
   <div class="actions">
     <button class="btn danger small hide" id="kidDelete">Löschen</button>
@@ -258,12 +248,10 @@ main{display:grid;grid-template-columns:96px 1fr;min-height:0;gap:0}
     <button id="importBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9M7 14l5-5 5 5M5 3h14"/></svg>Sicherung importieren</button>
     <button id="resetBtn" class="danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>Alles löschen</button>
   </div>
-  <p class="muted" style="font-size:12px;margin:10px 4px 0">Alle Daten und Fotos bleiben nur auf diesem Gerät gespeichert und werden nirgendwohin hochgeladen.</p>
+  <p class="muted" style="font-size:12px;margin:10px 4px 0">Alle Daten bleiben nur auf diesem Gerät gespeichert und werden nirgendwohin hochgeladen.</p>
   <div class="actions"><button class="btn primary" id="menuDone">Fertig</button></div>
 </div>
 
-<input type="file" id="camInput" accept="image/*" capture="environment" hidden>
-<input type="file" id="libInput" accept="image/*" hidden>
 <input type="file" id="importInput" accept="application/json,.json" hidden>
 <div class="toast" id="toast"></div>
 
@@ -401,9 +389,7 @@ function furnSVG(f){
 
 function kidSVG(k, pos, interactive){
   const R = kidR(), fs = 12 / ui.scale;
-  const inner = k.photo
-    ? `<circle r="${R}" fill="#eee"/><image href="${k.photo}" x="${-R}" y="${-R}" width="${2*R}" height="${2*R}" clip-path="url(#kidclip)" preserveAspectRatio="xMidYMid slice"/>`
-    : `<circle r="${R}" fill="${k.color || KID_COLORS[0]}"/><text text-anchor="middle" dy="0.35em" font-size="${R*0.75}" font-weight="700" fill="#fff">${esc(initials(k.name))}</text>`;
+  const inner = `<circle r="${R}" fill="${k.color || KID_COLORS[0]}"/><text text-anchor="middle" dy="0.35em" font-size="${R*0.75}" font-weight="700" fill="#fff">${esc(initials(k.name))}</text>`;
   return `<g data-kind="k" data-id="${k.id}" transform="translate(${pos.x} ${pos.y})" ${interactive ? '' : 'style="pointer-events:none"'}>
     <g><circle r="${R + 3/ui.scale}" fill="#fff" filter="url(#ksh)"/>${inner}
     <text class="kidname" y="${R + fs*1.35}" text-anchor="middle" font-size="${fs}" paint-order="stroke" stroke="#fff" stroke-width="${3.5/ui.scale}" stroke-linejoin="round">${esc(k.name)}</text></g>
@@ -434,7 +420,6 @@ function render(){
       <rect width="120" height="24" fill="#f4ead9"/>
       <path d="M0 23.5H120M60 0V24" stroke="#e9dcc6" stroke-width="1"/>
     </pattern>
-    <clipPath id="kidclip" clipPathUnits="objectBoundingBox"><circle cx=".5" cy=".5" r=".5"/></clipPath>
     <filter id="sh" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#5a4028" flood-opacity=".18"/></filter>
     <filter id="ksh" x="-50%" y="-50%" width="200%" height="200%"><feDropShadow dx="0" dy="${1.5/ui.scale}" stdDeviation="${2.5/ui.scale}" flood-color="#000" flood-opacity=".28"/></filter>
   </defs>
@@ -449,7 +434,7 @@ function render(){
 }
 
 function avatarHTML(k){
-  return `<div class="av" style="background:${k.color || KID_COLORS[0]}">${k.photo ? `<img src="${k.photo}" alt="">` : esc(initials(k.name))}</div>`;
+  return `<div class="av" style="background:${k.color || KID_COLORS[0]}">${esc(initials(k.name))}</div>`;
 }
 function renderTray(){
   const list = $('#trayList');
@@ -633,9 +618,9 @@ document.querySelectorAll('[data-close],[data-cancel]').forEach(b => b.addEventL
 
 /* ---------- Kind ---------- */
 let kidDraft = null;
-function openKidSheet(id, {camera = false} = {}){
+function openKidSheet(id){
   const k = id ? state.kids.find(k => k.id === id) : null;
-  kidDraft = k ? {...k} : {id:null, name:'', photo:null, color:KID_COLORS[state.kids.length % KID_COLORS.length]};
+  kidDraft = k ? {...k} : {id:null, name:'', color:KID_COLORS[state.kids.length % KID_COLORS.length]};
   $('#kidSheetTitle').textContent = k ? (k.name || 'Kind') : 'Kind hinzufügen';
   $('#kidName').value = kidDraft.name;
   $('#kidDelete').classList.toggle('hide', !k);
@@ -644,50 +629,23 @@ function openKidSheet(id, {camera = false} = {}){
   const hist = k ? state.snapshots.map(s => ({s, p:s.kids.find(p => p.id === k.id)})).filter(x => x.p).slice(0, 8) : [];
   $('#kidHistWrap').classList.toggle('hide', !hist.length);
   $('#kidHist').innerHTML = hist.map(({s, p}) => `<div><span>${esc(fmtTime(s.time))}${s.label ? ' · ' + esc(s.label) : ''}</span><span>${esc(p.area)}</span></div>`).join('');
-  refreshKidPhoto();
+  refreshKidPreview();
   showSheet($('#kidSheet'));
-  if (camera) $('#camInput').click();
+  if (!k) $('#kidName').focus();
 }
-function refreshKidPhoto(){
-  const b = $('#kidPhoto');
-  b.classList.toggle('has', !!kidDraft.photo);
-  b.querySelector('img')?.remove();
-  if (kidDraft.photo){ const i = document.createElement('img'); i.src = kidDraft.photo; b.appendChild(i); }
-  $('#kidNoPhoto').classList.toggle('hide', !kidDraft.photo);
-  $('#kidColorWrap').classList.toggle('hide', !!kidDraft.photo);
+function refreshKidPreview(){
+  const pv = $('#kidPreview');
+  pv.style.background = kidDraft.color; pv.textContent = initials($('#kidName').value);
   $('#kidColors').innerHTML = KID_COLORS.map(c => `<button data-c="${c}" class="${c === kidDraft.color ? 'on' : ''}" style="background:${c}"></button>`).join('');
 }
-$('#kidColors').addEventListener('click', e => { const b = e.target.closest('button'); if (b){ kidDraft.color = b.dataset.c; refreshKidPhoto(); } });
-$('#kidPhoto').addEventListener('click', () => $('#camInput').click());
-$('#kidCam').addEventListener('click', () => $('#camInput').click());
-$('#kidLib').addEventListener('click', () => $('#libInput').click());
-$('#kidNoPhoto').addEventListener('click', () => { kidDraft.photo = null; refreshKidPhoto(); });
-
-async function fileToAvatar(file){
-  const url = URL.createObjectURL(file);
-  try {
-    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
-    const S = 320, c = document.createElement('canvas'); c.width = c.height = S;
-    const side = Math.min(img.naturalWidth, img.naturalHeight);
-    // Gesichter sitzen meist etwas oberhalb der Mitte
-    const sx = (img.naturalWidth - side)/2, sy = Math.max(0, (img.naturalHeight - side) * 0.35);
-    c.getContext('2d').drawImage(img, sx, sy, side, side, 0, 0, S, S);
-    return c.toDataURL('image/jpeg', 0.82);
-  } finally { URL.revokeObjectURL(url); }
-}
-for (const inp of [$('#camInput'), $('#libInput')]){
-  inp.addEventListener('change', async () => {
-    const f = inp.files[0]; inp.value = ''; if (!f || !kidDraft) return;
-    try { kidDraft.photo = await fileToAvatar(f); refreshKidPhoto(); if (!$('#kidName').value) $('#kidName').focus(); }
-    catch(e){ toast('Foto konnte nicht geladen werden'); }
-  });
-}
+$('#kidColors').addEventListener('click', e => { const b = e.target.closest('button'); if (b){ kidDraft.color = b.dataset.c; refreshKidPreview(); } });
+$('#kidName').addEventListener('input', () => { $('#kidPreview').textContent = initials($('#kidName').value); });
 $('#kidName').addEventListener('keydown', e => { if (e.key === 'Enter') $('#kidSave').click(); });
 $('#kidSave').addEventListener('click', () => {
   const name = $('#kidName').value.trim();
   if (!name){ $('#kidName').focus(); toast('Bitte einen Namen eingeben'); return; }
-  if (kidDraft.id){ const k = state.kids.find(k => k.id === kidDraft.id); Object.assign(k, {name, photo:kidDraft.photo, color:kidDraft.color}); }
-  else state.kids.push({id:uid(), name, photo:kidDraft.photo, color:kidDraft.color, x:0, y:0, placed:false});
+  if (kidDraft.id){ const k = state.kids.find(k => k.id === kidDraft.id); Object.assign(k, {name, color:kidDraft.color}); }
+  else state.kids.push({id:uid(), name, color:kidDraft.color, x:0, y:0, placed:false});
   closeAll(); render(); save();
   if (!kidDraft.id) toast(`${name} ist in der Leiste – jetzt in den Raum ziehen`);
 });
@@ -697,7 +655,7 @@ $('#kidDelete').addEventListener('click', () => {
   state.kids = state.kids.filter(x => x.id !== k.id); closeAll(); render(); save();
 });
 $('#kidUnplace').addEventListener('click', () => { const k = state.kids.find(k => k.id === kidDraft.id); if (k) k.placed = false; closeAll(); render(); save(); });
-$('#addKidBtn').addEventListener('click', () => { if (ui.viewing) return; openKidSheet(null, {camera:true}); });
+$('#addKidBtn').addEventListener('click', () => { if (ui.viewing) return; openKidSheet(null); });
 
 /* ---------- Modus ---------- */
 $('#modeSeg').addEventListener('click', e => {
@@ -792,16 +750,18 @@ $('#importInput').addEventListener('change', async e => {
     const s = JSON.parse(await f.text());
     if (!s.room || !Array.isArray(s.kids) || !Array.isArray(s.furniture)) throw 0;
     if (!confirm('Aktuelle Daten durch die Sicherung ersetzen?')) return;
-    state = {...defaultState(), ...s, snapshots:s.snapshots || []}; ui.viewing = null; ui.selected = null;
+    state = {...defaultState(), ...s, snapshots:s.snapshots || []}; stripPhotos(); ui.viewing = null; ui.selected = null;
     closeAll(); render(); save(); toast('Sicherung geladen');
   } catch(_){ toast('Datei ist keine gültige Sicherung'); }
 });
 $('#resetBtn').addEventListener('click', () => {
-  if (!confirm('Wirklich alles löschen? Kinder, Fotos, Möbel und Verlauf gehen verloren.')) return;
+  if (!confirm('Wirklich alles löschen? Kinder, Möbel und Verlauf gehen verloren.')) return;
   state = defaultState(); ui.viewing = null; ui.selected = null; closeAll(); render(); save();
 });
 
 /* ================= Start ================= */
+// Frühere Versionen konnten Fotos speichern – diese werden entfernt.
+function stripPhotos(){ let n = 0; state.kids.forEach(k => { if ('photo' in k){ delete k.photo; n++; } }); return n; }
 document.addEventListener('gesturestart', e => e.preventDefault());
 document.addEventListener('dblclick', e => e.preventDefault());
 let rT; window.addEventListener('resize', () => { clearTimeout(rT); rT = setTimeout(render, 80); });
@@ -809,6 +769,7 @@ let rT; window.addEventListener('resize', () => { clearTimeout(rT); rT = setTime
 (async function init(){
   const s = await Store.get('state');
   state = s && s.room ? {...defaultState(), ...s} : defaultState();
+  if (stripPhotos()) save();
   buildCatalog(); render();
   if (navigator.storage?.persist) navigator.storage.persist().catch(() => {});
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
