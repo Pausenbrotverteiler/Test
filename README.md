@@ -4,7 +4,7 @@ Eine iPad-Web-App: Den Gruppenraum von oben einrichten, Kinder als farbige Kreis
 
 ## Funktionen
 
-- **Raum einrichten** (Modus „Einrichten“): Möbel über „Möbel“ hinzufügen, z. B. Sofa, Tische, Stühle, Teppiche, Kuschelecke, Spielküche, Regale, Tür und Fenster.
+- **Raum einrichten** (Modus „Einrichten“): Möbel über „Möbel“ hinzufügen: die Möbel der Gruppe (Kinderstuhl, Schalenstuhl, Ohrensessel, Kita-Tisch, Trapeztisch, Podest, Regale und Schränke) sowie Tür, Fenster und Pflanze.
   Antippen öffnet eine Leiste zum Drehen, Vergrößern/Verkleinern, **Farbe ändern** (35 Farben oder eine eigene Farbe), Benennen (z. B. Teppich → „Bauecke“), Duplizieren und Löschen.
 - **Kinder** (Modus „Kinder“, die Möbel sind dann gesperrt):
   - **+** links: Namen eingeben, Farbe wählen, fertig. Der Kreis zeigt die Initialen, darunter steht der Name.

@@ -348,20 +348,8 @@ function mix(hex, amt){
 }
 const dk = (c, a = .18) => mix(c, -a), lt = (c, a = .5) => mix(c, a);
 
-function drawSofa(w, h, color, seats){
-  const dark = dk(color, .16), arm = Math.min(w * 0.13, 26), back = h * 0.3;
-  let s = rr(-w/2, -h/2, w, h, 12, dark);
-  s += rr(-w/2 + arm, -h/2 + back, w - 2*arm, h - back - 4, 6, color);
-  const n = seats || (w > 150 ? 3 : w > 110 ? 2 : 1); const cw = (w - 2*arm) / n;
-  for (let i = 1; i < n; i++) s += `<line x1="${-w/2 + arm + i*cw}" y1="${-h/2 + back + 6}" x2="${-w/2 + arm + i*cw}" y2="${h/2 - 10}" stroke="${dark}" stroke-width="2" stroke-linecap="round" opacity=".6"/>`;
-  return s;
-}
-const ACC = ['#e07a5f','#3d5a80','#e9b44c','#81b29a','#b5838d','#6d9dc5'];
 const CATALOG = [
   {cat:'Sitzen', items:[
-    {type:'sofa', name:'Sofa', w:200, h:90, color:'#9fbfb0', draw:(w,h,c)=>drawSofa(w,h,c)},
-    {type:'sessel', name:'Sessel', w:90, h:85, color:'#e8b4a0', draw:(w,h,c)=>drawSofa(w,h,c,1)},
-    {type:'stuhl', name:'Stuhl', w:40, h:40, color:'#f2cc8f', noArea:true, draw:(w,h,c)=> rr(-w/2,-h/2+h*.22,w,h*.78,6,c,dk(c,.12)) + rr(-w/2,-h/2,w,h*.24,4,dk(c,.12))},
     {type:'schalenstuhl', name:'Schalenstuhl', w:56, h:52, color:'#8e8f8c', noArea:true, draw:(w,h,c)=>{
       // Holzbeine (schauen an den Ecken unter der Schale hervor)
       const leg = '#c49c74', lw = Math.max(4, w*.09);
@@ -399,11 +387,8 @@ const CATALOG = [
       // drei Knöpfe in der Rückenlehne
       for (const x of [-.13, 0, .13]) s += circ(w*x, -h*.27 + Math.abs(x)*h*.25, 2.6, dk(c,.12));
       return s; }},
-    {type:'bank', name:'Bank', w:150, h:40, color:'#d9b48f', draw:(w,h,c)=> rr(-w/2,-h/2,w,h,6,c,dk(c)) + `<line x1="${-w/2+6}" y1="0" x2="${w/2-6}" y2="0" stroke="${dk(c)}" stroke-width="2" opacity=".5"/>`},
-    {type:'sitzkissen', name:'Sitzkissen', w:50, h:50, color:'#9c89b8', draw:(w,h,c)=> `<ellipse rx="${w/2}" ry="${h/2}" fill="${c}"/><ellipse rx="${w/2-8}" ry="${h/2-8}" fill="none" stroke="#fff" stroke-width="2" opacity=".5"/>`},
   ]},
   {cat:'Tische', items:[
-    {type:'tisch', name:'Tisch', w:160, h:80, color:'#e3c4a2', draw:(w,h,c)=> rr(-w/2,-h/2,w,h,8,c,dk(c)) + rr(-w/2+8,-h/2+8,w-16,h-16,4,'none',dk(c),1.2,'opacity=".5"')},
     {type:'kitatisch', name:'Kita-Tisch', w:130, h:65, color:'#c4996b', draw:(w,h,c)=>{
       const e = dk(c,.28);
       let s = rr(-w/2, -h/2, w, h, 4, c, e, 1.6);
@@ -415,19 +400,6 @@ const CATALOG = [
       let s = `<clipPath id="cp"><polygon points="${pts}"/></clipPath><polygon points="${pts}" fill="${c}"/><g>`;
       for (let y = -h/2 + 6, i = 0; y < h/2 - 3; y += 7, i++) s += `<path d="M${-w/2} ${y} Q${-w*.05 + (i%3)*7} ${y + (i%2 ? 1.6 : -1.6)} ${w/2} ${y + (i%2 ? .6 : -.6)}" fill="none" stroke="${e}" stroke-width=".8" opacity=".3"/>`;
       return s + `</g><polygon points="${pts}" fill="none" stroke="${e}" stroke-width="1.6" stroke-linejoin="round"/>`; }},
-    {type:'tischrund', name:'Runder Tisch', w:110, h:110, color:'#e3c4a2', draw:(w,h,c)=> `<ellipse rx="${w/2}" ry="${h/2}" fill="${c}" stroke="${dk(c)}" stroke-width="2"/><ellipse rx="${w/2-9}" ry="${h/2-9}" fill="none" stroke="${dk(c)}" stroke-width="1.2" opacity=".5"/>`},
-    {type:'maltisch', name:'Maltisch', w:140, h:80, color:'#f4efe6', draw:(w,h,c)=> rr(-w/2,-h/2,w,h,8,c,dk(c)) + circ(-w*.25,-h*.12,9,'#e07a5f') + circ(-w*.05,h*.15,7,'#3d5a80') + circ(w*.2,-h*.1,8,'#e9b44c') + circ(w*.32,h*.2,6,'#81b29a') + rr(-w*.42,h*.05,w*.22,h*.28,3,'#fff','#ddd',1)},
-  ]},
-  {cat:'Teppiche', items:[
-    {type:'teppich', name:'Teppich', w:250, h:180, color:'#efd3c8', rug:true, draw:(w,h,c)=> rr(-w/2,-h/2,w,h,10,c) + rr(-w/2+12,-h/2+12,w-24,h-24,6,'none','#fff',2.5,'stroke-dasharray="10 8" opacity=".8"')},
-    {type:'teppichrund', name:'Runder Teppich', w:220, h:220, color:'#cfe1d6', rug:true, draw:(w,h,c)=> `<ellipse rx="${w/2}" ry="${h/2}" fill="${c}"/><ellipse rx="${w/2-14}" ry="${h/2-14}" fill="none" stroke="#fff" stroke-width="2.5" stroke-dasharray="10 8" opacity=".9"/><ellipse rx="${w/4}" ry="${h/4}" fill="none" stroke="#fff" stroke-width="2.5" opacity=".6"/>`},
-    {type:'teppichbunt', name:'Streifenteppich', w:240, h:160, color:'#f6d6c8', rug:true, draw:(w,h,c)=>{
-      // Standardfarbe = bunte Streifen, sonst Streifen in Tönen der gewählten Farbe
-      const cols = c === '#f6d6c8' ? ['#f6d6c8','#f8e6c4','#d6e6dc','#d4deeb'] : [c, lt(c,.3), lt(c,.55), lt(c,.3)];
-      const n = 8, sw = w/n; let s = `<clipPath id="cp"><rect x="${-w/2}" y="${-h/2}" width="${w}" height="${h}" rx="10"/></clipPath><g>`;
-      for (let i = 0; i < n; i++) s += `<rect x="${-w/2+i*sw}" y="${-h/2}" width="${sw+.5}" height="${h}" fill="${cols[i%4]}"/>`;
-      return s + `</g>` + rr(-w/2,-h/2,w,h,10,'none','#fff',2,'opacity=".6"'); }},
-    {type:'bauteppich', name:'Bauteppich', w:200, h:150, color:'#d4deeb', rug:true, draw:(w,h,c)=>{ let s=rr(-w/2,-h/2,w,h,8,c); for(let x=-w/2+25;x<w/2;x+=25) s+=`<line x1="${x}" y1="${-h/2}" x2="${x}" y2="${h/2}" stroke="#fff" stroke-width="1.5" opacity=".7"/>`; for(let y=-h/2+25;y<h/2;y+=25) s+=`<line x1="${-w/2}" y1="${y}" x2="${w/2}" y2="${y}" stroke="#fff" stroke-width="1.5" opacity=".7"/>`; return s; }},
   ]},
   {cat:'Spielen', items:[
     {type:'podest', name:'Podest', w:120, h:62, color:'#78a64e', draw:(w,h,c)=>{
@@ -435,13 +407,6 @@ const CATALOG = [
       let s = rr(-w/2, -h/2, w, h, 3, frame, '#cbb38c', 1.5) + rr(-w/2 + 5, -h/2 + 5, w - 10, h - 10, 1.5, c);
       for (let y = -h/2 + 9; y < h/2 - 6; y += 4) s += `<line x1="${-w/2 + 6}" y1="${y}" x2="${w/2 - 6}" y2="${y}" stroke="${dk(c,.2)}" stroke-width=".6" opacity=".25"/>`;
       return s; }},
-    {type:'kuschel', name:'Kuschelecke', w:180, h:140, color:'#d9c8e3', draw:(w,h,c)=> rr(-w/2,-h/2,w,h,16,c,dk(c,.12)) + rr(-w/2+10,-h/2+10,w*.32,h*.3,12,lt(c,.55)) + rr(w/2-10-w*.3,-h/2+12,w*.3,h*.28,12,lt(c,.4)) + circ(0,h*.12,h*.14,lt(c,.55))},
-    {type:'kueche', name:'Spielküche', w:120, h:60, color:'#f7f3ea', draw:(w,h,c)=> rr(-w/2,-h/2,w,h,6,c,dk(c,.25)) + circ(-w*.25,0,h*.2,'none','#8a8178',2.5) + circ(-w*.25,0,h*.08,'#8a8178') + rr(w*.05,-h*.28,w*.36,h*.56,6,'#cfe3ee','#9cbccd')},
-    {type:'bausteine', name:'Bausteine', w:70, h:70, color:'#f0e6d8', draw:(w,h,c)=> rr(-w/2,-h/2,w,h,8,c,dk(c,.15)) + rr(-w*.36,-w*.34,w*.3,w*.2,3,'#e07a5f') + rr(w*.02,-w*.36,w*.2,w*.3,3,'#3d5a80') + rr(-w*.3,w*.06,w*.24,w*.24,3,'#e9b44c') + rr(w*.04,w*.04,w*.32,w*.2,3,'#81b29a')},
-    {type:'puppenecke', name:'Puppenbett', w:90, h:60, color:'#e8b4a0', draw:(w,h,c)=> rr(-w/2,-h/2,w,h,8,c,dk(c,.12)) + rr(-w/2+6,-h/2+6,w*.28,h-12,6,'#fff') + rr(-w/2+w*.36,-h/2+6,w*.56,h-12,6,lt(c,.6))},
-    {type:'staffelei', name:'Staffelei', w:70, h:45, color:'#b98d66', draw:(w,h,c)=> rr(-w/2,-h/2,w,h*.35,4,'#fff','#cdbfae') + `<path d="M${-w*.4} ${h/2} L0 ${-h*.1} L${w*.4} ${h/2}" fill="none" stroke="${c}" stroke-width="4" stroke-linecap="round"/>`},
-    {type:'buecher', name:'Bücherkiste', w:80, h:50, color:'#d9b48f', draw:(w,h,c)=>{ let s=rr(-w/2,-h/2,w,h,6,c,dk(c)); const n=6,bw=(w-14)/n; for(let i=0;i<n;i++) s+=rr(-w/2+7+i*bw,-h/2+7,bw-2,h-14,2,ACC[i]); return s; }},
-    {type:'hochebene', name:'Hochebene', w:220, h:160, color:'#b5838d', draw:(w,h,c)=> rr(-w/2,-h/2,w,h,10,lt(c,.85),c,2.5,'stroke-dasharray="12 8"') + `<g stroke="${c}" stroke-width="3" stroke-linecap="round"><line x1="${w/2-40}" y1="${h/2}" x2="${w/2-40}" y2="${h/2-50}"/><line x1="${w/2-15}" y1="${h/2}" x2="${w/2-15}" y2="${h/2-50}"/><line x1="${w/2-40}" y1="${h/2-14}" x2="${w/2-15}" y2="${h/2-14}"/><line x1="${w/2-40}" y1="${h/2-30}" x2="${w/2-15}" y2="${h/2-30}"/></g>`},
   ]},
   {cat:'Raum', items:[
     {type:'offenesregal', name:'Offenes Regal', w:100, h:40, color:'#c4996b', draw:(w,h,c)=>{
@@ -490,12 +455,9 @@ const CATALOG = [
       return rr(-w/2 + 3, -h/2 + 3, w - 6, h - 4, 2, dk(c,.12)) + rr(-w/2, -h/2, w, h - 4, 2.5, c, e, 1.6)
         + rr(-w/2 + 2.5, -h/2 + 2.5, w - 5, h - 9, 2, 'none', lt(c,.25), 1, 'opacity=".6"')
         + rr(w*.12, h/2 - 3.5, w*.22, 3, 1.5, '#9a9a96'); }},
-    {type:'regal', name:'Regal', w:160, h:40, color:'#d9b48f', draw:(w,h,c)=>{ let s=rr(-w/2,-h/2,w,h,4,c,dk(c)); const n=Math.max(2,Math.round(w/40)), cw=w/n; for(let i=0;i<n;i++){ if(i) s+=`<line x1="${-w/2+i*cw}" y1="${-h/2}" x2="${-w/2+i*cw}" y2="${h/2}" stroke="${dk(c)}" stroke-width="2"/>`; s+=rr(-w/2+i*cw+6,-h/2+6,cw-12,h-12,3,ACC[i%4],null,0,'opacity=".75"'); } return s; }},
-    {type:'garderobe', name:'Garderobe', w:180, h:35, color:'#e8ddd0', draw:(w,h,c)=>{ let s=rr(-w/2,-h/2,w,h,4,c,dk(c)); for(let x=-w/2+20;x<w/2-10;x+=30) s+=circ(x,0,5,dk(c,.35)); return s; }},
     {type:'pflanze', name:'Pflanze', w:55, h:55, color:'#d08c60', draw:(w,h,c)=>{ let s=circ(0,0,w*.32,c); for(let i=0;i<6;i++){ s+=`<ellipse cx="0" cy="${-w*.25}" rx="${w*.13}" ry="${w*.25}" fill="${i%2?'#81b29a':'#6a9c82'}" transform="rotate(${i*60})"/>`; } return s + circ(0,0,w*.1,'#5c8a72'); }},
     {type:'tuer', name:'Tür', w:90, h:90, noArea:true, noColor:true, draw:(w,h)=> `<rect x="${-w/2}" y="${h/2-6}" width="${w}" height="10" fill="#f6f1ea"/><path d="M${-w/2} ${h/2} A${w} ${h} 0 0 1 ${w/2} ${h/2-h}" fill="none" stroke="#b9a996" stroke-width="1.5" stroke-dasharray="5 5"/><line x1="${-w/2}" y1="${h/2}" x2="${-w/2}" y2="${-h/2}" stroke="#8a7a68" stroke-width="5" stroke-linecap="round"/>`},
     {type:'fenster', name:'Fenster', w:130, h:14, noArea:true, noColor:true, draw:(w,h)=> rr(-w/2,-h/2,w,h,2,'#dcebf3','#9cbccd') + `<line x1="0" y1="${-h/2}" x2="0" y2="${h/2}" stroke="#9cbccd" stroke-width="2"/>`},
-    {type:'waschbecken', name:'Waschbecken', w:70, h:50, color:'#f2f2f0', draw:(w,h,c)=> rr(-w/2,-h/2,w,h,8,c,dk(c,.22)) + `<ellipse rx="${w*.32}" ry="${h*.28}" cy="${h*.06}" fill="#dcebf3" stroke="#9cbccd" stroke-width="1.5"/>` + circ(0,-h*.34,3,'#9a948c')},
   ]},
 ];
 /* Farbauswahl für Möbel */
@@ -644,18 +606,17 @@ function defaultState(){
   return {
     v:1, room:{name:'Gruppenraum', w:W0, h:H0}, mode:'kids',
     furniture:[
-      f('teppichrund', 610, 430),
-      f('bauteppich', 160, 470),
       f('fenster', 300, 7), f('fenster', 560, 7),
       f('tuer', 60, H0-45),
-      f('sofa', 610, H0-52, 180),
-      f('tisch', 360, 230), f('stuhl', 320, 172), f('stuhl', 400, 172), f('stuhl', 320, 288, 180), f('stuhl', 400, 288, 180),
-      f('regal', 130, 26, 0, {w:180}),
-      f('kueche', W0-38, 170, 90),
-      f('kuschel', 805, 410, 90, {name:'Kuschelecke'}),
-      f('bausteine', 160, 470),
       f('pflanze', W0-34, 34),
-      f('maltisch', 600, 120),
+      f('kitatisch', 330, 250),
+      f('kinderstuhl', 290, 196), f('kinderstuhl', 370, 196), f('kinderstuhl', 290, 304, 180), f('kinderstuhl', 370, 304, 180),
+      f('trapeztisch', 620, 200), f('trapeztisch', 620, 254, 180),
+      f('podest', 640, 470),
+      f('ohrensessel', 820, 560, 315),
+      f('offenesregal', 160, 22),
+      f('schubladenschrank', W0-24, 360, 90),
+      f('buecherregal', 470, H0-24, 180),
     ],
     kids:[], snapshots:[]
   };
@@ -1140,7 +1101,7 @@ $('#importInput').addEventListener('change', async e => {
     const s = JSON.parse(await f.text());
     if (!s.room || !Array.isArray(s.kids) || !Array.isArray(s.furniture)) throw 0;
     if (!confirm('Aktuelle Daten durch die Sicherung ersetzen?')) return;
-    state = {...defaultState(), ...s, snapshots:s.snapshots || []}; stripPhotos(); ui.viewing = null; ui.selected = null;
+    state = {...defaultState(), ...s, snapshots:s.snapshots || []}; stripPhotos(); dropUnknownFurniture(); ui.viewing = null; ui.selected = null;
     closeAll(); render(); save(); toast('Sicherung geladen');
   } catch(_){ toast('Datei ist keine gültige Sicherung'); }
 });
@@ -1151,6 +1112,8 @@ $('#resetBtn').addEventListener('click', () => {
 
 /* ================= Start ================= */
 // Frühere Versionen konnten Fotos speichern – diese werden entfernt.
+// Entfernte Möbeltypen aus gespeicherten Daten löschen
+function dropUnknownFurniture(){ const n = state.furniture.length; state.furniture = state.furniture.filter(f => CAT[f.type]); if (ui.selected && !state.furniture.some(f => f.id === ui.selected)) ui.selected = null; return n !== state.furniture.length; }
 function stripPhotos(){ let n = 0; state.kids.forEach(k => { if ('photo' in k){ delete k.photo; n++; } }); return n; }
 document.addEventListener('gesturestart', e => e.preventDefault());
 document.addEventListener('dblclick', e => e.preventDefault());
@@ -1159,7 +1122,7 @@ let rT; window.addEventListener('resize', () => { clearTimeout(rT); rT = setTime
 (async function init(){
   const s = await Store.get('state');
   state = s && s.room ? {...defaultState(), ...s} : defaultState();
-  if (stripPhotos()) save();
+  if (stripPhotos() | dropUnknownFurniture()) save();
   buildCatalog(); buildColorPop(); render();
   if (navigator.storage?.persist) navigator.storage.persist().catch(() => {});
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
