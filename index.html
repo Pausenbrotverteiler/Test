@@ -375,6 +375,30 @@ const CATALOG = [
       // rundes Filzkissen
       s += `<circle cx="0" cy="${h*.14}" r="${w*.23}" fill="#b4b2ae" stroke="#9c9a95" stroke-width="1"/><circle cx="0" cy="${h*.14}" r="${w*.23}" fill="url(#felt)" opacity=".5"/>`;
       return s; }},
+    {type:'kinderstuhl', name:'Kinderstuhl', w:36, h:38, color:'#ece6dc', noArea:true, draw:(w,h,c)=>{
+      const e = dk(c,.16);
+      // gebogene Rückenlehne mit zwei Pfosten
+      let s = `<path d="M${-w*.46} ${-h*.4} Q0 ${-h*.56} ${w*.46} ${-h*.4} L${w*.46} ${-h*.28} Q0 ${-h*.44} ${-w*.46} ${-h*.28} Z" fill="${c}" stroke="${e}" stroke-width="1.2"/>`;
+      s += rr(-w*.5, -h*.5, w*.15, h*.24, 3, dk(c,.05), e, 1.2) + rr(w*.35, -h*.5, w*.15, h*.24, 3, dk(c,.05), e, 1.2);
+      // Sitzfläche mit Maserung
+      s += rr(-w*.37, -h*.26, w*.74, h*.72, 2.5, lt(c,.05), e, 1.2);
+      for (const f of [-.2, 0, .2]) s += `<line x1="${-w*.3}" y1="${h*(.1+f)}" x2="${w*.3}" y2="${h*(.08+f)}" stroke="${e}" stroke-width=".7" opacity=".35"/>`;
+      // runde Seitenholme
+      s += rr(-w*.5, -h*.3, w*.14, h*.8, w*.07, c, e, 1.2) + rr(w*.36, -h*.3, w*.14, h*.8, w*.07, c, e, 1.2);
+      return s; }},
+    {type:'ohrensessel', name:'Ohrensessel', w:80, h:84, color:'#5fa9a3', dots:true, draw:(w,h,c)=>{
+      const e = dk(c,.18);
+      const parts = (fill, seatFill, stroke) => {
+        const st = stroke ? ` stroke="${stroke}" stroke-width="1.5"` : '';
+        return `<path d="M${-w*.42} ${-h*.2} Q${-w*.44} ${-h*.5} 0 ${-h*.5} Q${w*.44} ${-h*.5} ${w*.42} ${-h*.2} L${w*.42} ${-h*.12} L${-w*.42} ${-h*.12} Z" fill="${fill}"${st}/>`
+          + `<path d="M${-w*.36} ${-h*.42} Q${-w*.54} ${-h*.38} ${-w*.5} ${-h*.08} L${-w*.34} ${-h*.12} Z M${w*.36} ${-h*.42} Q${w*.54} ${-h*.38} ${w*.5} ${-h*.08} L${w*.34} ${-h*.12} Z" fill="${fill}"${st}/>`
+          + rr(-w*.5, -h*.14, w*.19, h*.58, w*.09, fill, stroke, 1.5) + rr(w*.31, -h*.14, w*.19, h*.58, w*.09, fill, stroke, 1.5)
+          + `<path d="M${-w*.32} ${-h*.18} L${w*.32} ${-h*.18} L${w*.34} ${h*.34} Q${w*.34} ${h*.5} 0 ${h*.5} Q${-w*.34} ${h*.5} ${-w*.34} ${h*.34} Z" fill="${seatFill}"${st}/>`;
+      };
+      let s = parts(c, lt(c,.08), null) + `<g opacity=".8">${parts('url(#dots)', 'url(#dots)', null)}</g>` + parts('none', 'none', e);
+      // drei Knöpfe in der Rückenlehne
+      for (const x of [-.13, 0, .13]) s += circ(w*x, -h*.27 + Math.abs(x)*h*.25, 2.6, dk(c,.12));
+      return s; }},
     {type:'bank', name:'Bank', w:150, h:40, color:'#d9b48f', draw:(w,h,c)=> rr(-w/2,-h/2,w,h,6,c,dk(c)) + `<line x1="${-w/2+6}" y1="0" x2="${w/2-6}" y2="0" stroke="${dk(c)}" stroke-width="2" opacity=".5"/>`},
     {type:'sitzkissen', name:'Sitzkissen', w:50, h:50, color:'#9c89b8', draw:(w,h,c)=> `<ellipse rx="${w/2}" ry="${h/2}" fill="${c}"/><ellipse rx="${w/2-8}" ry="${h/2-8}" fill="none" stroke="#fff" stroke-width="2" opacity=".5"/>`},
   ]},
@@ -395,6 +419,11 @@ const CATALOG = [
     {type:'bauteppich', name:'Bauteppich', w:200, h:150, color:'#d4deeb', rug:true, draw:(w,h,c)=>{ let s=rr(-w/2,-h/2,w,h,8,c); for(let x=-w/2+25;x<w/2;x+=25) s+=`<line x1="${x}" y1="${-h/2}" x2="${x}" y2="${h/2}" stroke="#fff" stroke-width="1.5" opacity=".7"/>`; for(let y=-h/2+25;y<h/2;y+=25) s+=`<line x1="${-w/2}" y1="${y}" x2="${w/2}" y2="${y}" stroke="#fff" stroke-width="1.5" opacity=".7"/>`; return s; }},
   ]},
   {cat:'Spielen', items:[
+    {type:'podest', name:'Podest', w:120, h:62, color:'#78a64e', draw:(w,h,c)=>{
+      const frame = '#ead8b6';
+      let s = rr(-w/2, -h/2, w, h, 3, frame, '#cbb38c', 1.5) + rr(-w/2 + 5, -h/2 + 5, w - 10, h - 10, 1.5, c);
+      for (let y = -h/2 + 9; y < h/2 - 6; y += 4) s += `<line x1="${-w/2 + 6}" y1="${y}" x2="${w/2 - 6}" y2="${y}" stroke="${dk(c,.2)}" stroke-width=".6" opacity=".25"/>`;
+      return s; }},
     {type:'kuschel', name:'Kuschelecke', w:180, h:140, color:'#d9c8e3', draw:(w,h,c)=> rr(-w/2,-h/2,w,h,16,c,dk(c,.12)) + rr(-w/2+10,-h/2+10,w*.32,h*.3,12,lt(c,.55)) + rr(w/2-10-w*.3,-h/2+12,w*.3,h*.28,12,lt(c,.4)) + circ(0,h*.12,h*.14,lt(c,.55))},
     {type:'kueche', name:'Spielküche', w:120, h:60, color:'#f7f3ea', draw:(w,h,c)=> rr(-w/2,-h/2,w,h,6,c,dk(c,.25)) + circ(-w*.25,0,h*.2,'none','#8a8178',2.5) + circ(-w*.25,0,h*.08,'#8a8178') + rr(w*.05,-h*.28,w*.36,h*.56,6,'#cfe3ee','#9cbccd')},
     {type:'bausteine', name:'Bausteine', w:70, h:70, color:'#f0e6d8', draw:(w,h,c)=> rr(-w/2,-h/2,w,h,8,c,dk(c,.15)) + rr(-w*.36,-w*.34,w*.3,w*.2,3,'#e07a5f') + rr(w*.02,-w*.36,w*.2,w*.3,3,'#3d5a80') + rr(-w*.3,w*.06,w*.24,w*.24,3,'#e9b44c') + rr(w*.04,w*.04,w*.32,w*.2,3,'#81b29a')},
@@ -636,6 +665,7 @@ function render(){
       <rect width="120" height="24" fill="#f4ead9"/>
       <path d="M0 23.5H120M60 0V24" stroke="#e9dcc6" stroke-width="1"/>
     </pattern>
+    <pattern id="dots" width="22" height="22" patternUnits="userSpaceOnUse"><circle cx="5.5" cy="5.5" r="2.8" fill="#f4fbfa"/><circle cx="16.5" cy="16.5" r="2.8" fill="#f4fbfa"/></pattern>
     <pattern id="felt" width="4" height="4" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r=".6" fill="#8a8884"/><circle cx="3" cy="2.6" r=".5" fill="#d2d0cc"/></pattern>
     <filter id="sh" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#5a4028" flood-opacity=".18"/></filter>
     <filter id="ksh" x="-50%" y="-50%" width="200%" height="200%"><feDropShadow dx="0" dy="${1.5/ui.scale}" stdDeviation="${2.5/ui.scale}" flood-color="#000" flood-opacity=".28"/></filter>
