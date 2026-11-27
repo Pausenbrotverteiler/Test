@@ -295,7 +295,7 @@ main{display:grid;grid-template-columns:96px 1fr;min-height:0;gap:0}
     <button id="resetBtn" class="danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>Alles löschen</button>
   </div>
   <p class="muted" style="font-size:12px;margin:10px 4px 0">Alle Daten bleiben nur auf diesem Gerät gespeichert und werden nirgendwohin hochgeladen.</p>
-  <p class="muted" style="font-size:12px;margin:4px 4px 0">App-Version 13</p>
+  <p class="muted" style="font-size:12px;margin:4px 4px 0">App-Version 14</p>
   <div class="actions"><button class="btn primary" id="menuDone">Fertig</button></div>
 </div>
 
@@ -350,6 +350,25 @@ function mix(hex, amt){
 }
 const dk = (c, a = .18) => mix(c, -a), lt = (c, a = .5) => mix(c, a);
 
+/* Modulsofa (Kunstleder, heller Streifen unten): Rückenlehne oben, Sitz vorne (unten) */
+function sofaElement(w, h, c, {back = true, left = false, arm = false, ottoman = false} = {}){
+  const e = dk(c, .4), seat = lt(c, .12), pipe = '#d9dde2', bd = Math.min(18, h*.32), aw = Math.min(15, w*.22);
+  let s = rr(-w/2, -h/2, w, h, 4, c, e, 1.4);
+  if (ottoman) return s + rr(-w/2 + 3, -h/2 + 3, w - 6, h - 6, 3, seat) + rr(-w/2 + 1.8, -h/2 + 1.8, w - 3.6, h - 3.6, 3, 'none', pipe, 1.4);
+  const x0 = -w/2 + (left ? bd : 0), x1 = w/2 - (arm ? aw : 0), y0 = -h/2 + (back ? bd : 0);
+  s += rr(x0 + 2, y0 + 2, x1 - x0 - 4, h/2 - y0 - 4, 3, seat);
+  if (back) s += `<line x1="${-w/2 + 3}" y1="${-h/2 + bd*.45}" x2="${w/2 - 3}" y2="${-h/2 + bd*.45}" stroke="${lt(c,.2)}" stroke-width="1" opacity=".7"/>`;
+  if (left) s += `<line x1="${-w/2 + bd*.45}" y1="${-h/2 + 3}" x2="${-w/2 + bd*.45}" y2="${h/2 - 3}" stroke="${lt(c,.2)}" stroke-width="1" opacity=".7"/>`;
+  // heller Streifen an der Vorderkante (und an offenen Seiten)
+  s += `<path d="M${-w/2 + 2} ${h/2 - 2} L${w/2 - 2} ${h/2 - 2}" stroke="${pipe}" stroke-width="1.6" stroke-linecap="round"/>`;
+  if (arm) s += `<path d="M${w/2 - 2} ${h/2 - 2} L${w/2 - 2} ${-h/2 + 2}" stroke="${pipe}" stroke-width="1.6" stroke-linecap="round"/>`;
+  return s;
+}
+function drawPodest(w, h, c){
+  let s = rr(-w/2, -h/2, w, h, 3, '#ead8b6', '#cbb38c', 1.5) + rr(-w/2 + 5, -h/2 + 5, w - 10, h - 10, 1.5, c);
+  for (let y = -h/2 + 9; y < h/2 - 6; y += 4) s += `<line x1="${-w/2 + 6}" y1="${y}" x2="${w/2 - 6}" y2="${y}" stroke="${dk(c,.2)}" stroke-width=".6" opacity=".25"/>`;
+  return s;
+}
 const CATALOG = [
   {cat:'Sitzen', items:[
     {type:'schalenstuhl', name:'Schalenstuhl', w:56, h:52, color:'#8e8f8c', noArea:true, draw:(w,h,c)=>{
@@ -389,6 +408,10 @@ const CATALOG = [
       // drei Knöpfe in der Rückenlehne
       for (const x of [-.13, 0, .13]) s += circ(w*x, -h*.27 + Math.abs(x)*h*.25, 2.6, dk(c,.12));
       return s; }},
+    {type:'sofahocker', name:'Sofa: Hocker', areaName:'Sofa', w:60, h:60, color:'#45474d', draw:(w,h,c)=> sofaElement(w,h,c,{ottoman:true})},
+    {type:'sofaecke', name:'Sofa: Eckteil', areaName:'Sofa', w:62, h:62, color:'#45474d', draw:(w,h,c)=> sofaElement(w,h,c,{left:true})},
+    {type:'sofabank', name:'Sofa: Sitzbank', areaName:'Sofa', w:125, h:62, color:'#45474d', draw:(w,h,c)=> sofaElement(w,h,c)},
+    {type:'sofaende', name:'Sofa: Endteil', areaName:'Sofa', w:72, h:62, color:'#45474d', draw:(w,h,c)=> sofaElement(w,h,c,{arm:true})},
   ]},
   {cat:'Tische', items:[
     {type:'kitatisch', name:'Kita-Tisch', w:130, h:65, color:'#c4996b', draw:(w,h,c)=>{
@@ -404,11 +427,8 @@ const CATALOG = [
       return s + `</g><polygon points="${pts}" fill="none" stroke="${e}" stroke-width="1.6" stroke-linejoin="round"/>`; }},
   ]},
   {cat:'Spielen', items:[
-    {type:'podest', name:'Podest', w:120, h:62, color:'#78a64e', draw:(w,h,c)=>{
-      const frame = '#ead8b6';
-      let s = rr(-w/2, -h/2, w, h, 3, frame, '#cbb38c', 1.5) + rr(-w/2 + 5, -h/2 + 5, w - 10, h - 10, 1.5, c);
-      for (let y = -h/2 + 9; y < h/2 - 6; y += 4) s += `<line x1="${-w/2 + 6}" y1="${y}" x2="${w/2 - 6}" y2="${y}" stroke="${dk(c,.2)}" stroke-width=".6" opacity=".25"/>`;
-      return s; }},
+    {type:'podest', name:'Podest', w:120, h:62, color:'#78a64e', draw:(w,h,c)=>drawPodest(w,h,c)},
+    {type:'podestquadrat', name:'Podest (quadratisch)', areaName:'Podest', w:62, h:62, color:'#78a64e', draw:(w,h,c)=>drawPodest(w,h,c)},
   ]},
   {cat:'Raum', items:[
     {type:'offenesregal', name:'Offenes Regal', w:100, h:40, color:'#c4996b', draw:(w,h,c)=>{
@@ -901,7 +921,7 @@ function areaAt(x, y){
     const lx = dx*Math.cos(a) - dy*Math.sin(a), ly = dx*Math.sin(a) + dy*Math.cos(a), m = 35;
     if (Math.abs(lx) <= f.w/2 + m && Math.abs(ly) <= f.h/2 + m){ const ar = f.w*f.h; if (ar < bestA){ bestA = ar; best = f; } }
   }
-  return best ? (best.name || CAT[best.type].name) : 'Im Raum';
+  return best ? (best.name || CAT[best.type].areaName || CAT[best.type].name) : 'Im Raum';
 }
 
 /* ================= Sheets & Drawers ================= */
