@@ -4,7 +4,7 @@ Eine iPad-Web-App: Den Gruppenraum von oben einrichten, Kinder als farbige Kreis
 
 ## Funktionen
 
-- **Raum einrichten** (Modus „Einrichten“): Möbel über „Möbel“ hinzufügen: die Möbel der Gruppe (Kinderstuhl, Schalenstuhl, Ohrensessel, Kita-Tisch, Trapeztisch, Podest, Regale und Schränke) sowie Tür, Fenster und Pflanze. Regale, Schränke, Bogenregale, Sofa-Elemente, Tische und Podeste **rasten magnetisch ein**, wenn man sie nah aneinanderschiebt. So lassen sich z. B. Bogenregale (45° und 90°) passgenau mit geraden Regalen zu einer Rundung stellen. Den **Teppich** kannst du am Eckpunkt beliebig in Breite und Länge ziehen; im Farbmenü gibt es die Formen eckig, abgerundet und oval.
+- **Raum einrichten** (Modus „Einrichten“): Möbel über „Möbel“ hinzufügen: die Möbel der Gruppe (Kinderstuhl, Schalenstuhl, Ohrensessel, Kita-Tisch, Trapeztisch, Podest, Regale und Schränke) sowie Tür, Fenster und Pflanze. Regale, Schränke, Bogenregale, Sofa-Elemente, Tische und Podeste **rasten magnetisch ein**, wenn man sie nah aneinanderschiebt. Dabei richten sie sich auch automatisch aus (bis 25°). So lassen sich z. B. Bogenregale (30°, 45° und 90°) passgenau mit geraden Regalen zu einer Rundung stellen. Den **Teppich** kannst du am Eckpunkt beliebig in Breite und Länge ziehen; im Farbmenü gibt es die Formen eckig, abgerundet und oval.
   Antippen öffnet eine Leiste zum Drehen, Vergrößern/Verkleinern, **Farbe ändern** (35 Farben oder eine eigene Farbe), Benennen (z. B. Teppich → „Bauecke“), Duplizieren und Löschen.
 - **Kinder** (Modus „Kinder“, die Möbel sind dann gesperrt):
   - **+** links: Namen eingeben, Farbe wählen, fertig. Der Kreis zeigt die Initialen, darunter steht der Name.

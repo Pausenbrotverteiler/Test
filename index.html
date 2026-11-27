@@ -295,7 +295,7 @@ main{display:grid;grid-template-columns:96px 1fr;min-height:0;gap:0}
     <button id="resetBtn" class="danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>Alles löschen</button>
   </div>
   <p class="muted" style="font-size:12px;margin:10px 4px 0">Alle Daten bleiben nur auf diesem Gerät gespeichert und werden nirgendwohin hochgeladen.</p>
-  <p class="muted" style="font-size:12px;margin:4px 4px 0">App-Version 19</p>
+  <p class="muted" style="font-size:12px;margin:4px 4px 0">App-Version 20</p>
   <div class="actions"><button class="btn primary" id="menuDone">Fertig</button></div>
 </div>
 
@@ -484,6 +484,7 @@ const CATALOG = [
       // Deckplatte, vorne (unten) offene Seite mit dunklerem Schatten der Fächer
       return rr(-w/2, -h/2, w, h, 2.5, c, e, 1.6) + rr(-w/2 + 4, h/2 - 7, w - 8, 5, 1.5, dk(c,.22))
         + rr(-w/2 + 2.5, -h/2 + 2.5, w - 5, h - 12, 2, 'none', lt(c,.25), 1, 'opacity=".6"'); }},
+    {type:'bogenregal30', name:'Bogenregal 30°', w:55, h:53.7, color:'#c4996b', faces:(w,h)=>arcShelfGeom(w,30).faces, draw:(w,h,c)=>drawArcShelf(w,c,30)},
     {type:'bogenregal', name:'Bogenregal 45°', w:77.8, h:64, color:'#c4996b', faces:(w,h)=>arcShelfGeom(w,45).faces, draw:(w,h,c)=>drawArcShelf(w,c,45)},
     {type:'bogenregal90', name:'Bogenregal 90°', w:110, h:110, color:'#c4996b', faces:(w,h)=>arcShelfGeom(w,90).faces, draw:(w,h,c)=>drawArcShelf(w,c,90)},
     {type:'viertelregal', name:'Viertelkreisregal', w:80, h:80, faces:(w,h)=>[[w/2, h/2, -w/2, h/2], [w/2, -h/2, w/2, h/2]], color:'#c4996b', draw:(w,h,c)=>{
@@ -878,18 +879,28 @@ function worldFaces(f){
 }
 function snapFurniture(f){
   const mine = worldFaces(f); if (!mine.length) return;
-  let best = null, bestD = 22;
+  const ang = fc => Math.atan2(fc[3]-fc[1], fc[2]-fc[0]);
+  const norm = x => { while (x > Math.PI) x -= 2*Math.PI; while (x < -Math.PI) x += 2*Math.PI; return x; };
+  let best = null, bestD = 25;
   for (const o of state.furniture){
     if (o === f) continue;
     for (const b of worldFaces(o)) for (const a of mine){
-      const ax = a[2]-a[0], ay = a[3]-a[1], bx = b[2]-b[0], by = b[3]-b[1], la = Math.hypot(ax, ay), lb = Math.hypot(bx, by);
+      const la = Math.hypot(a[2]-a[0], a[3]-a[1]), lb = Math.hypot(b[2]-b[0], b[3]-b[1]);
       if (!la || !lb || Math.abs(la - lb) > .15 * Math.max(la, lb)) continue;
-      if ((ax*bx + ay*by) / (la*lb) > -.995) continue;          // Kanten müssen entgegengesetzt liegen
-      const dx = (b[0]+b[2] - a[0]-a[2]) / 2, dy = (b[1]+b[3] - a[1]-a[3]) / 2, dist = Math.hypot(dx, dy);
-      if (dist < bestD){ bestD = dist; best = [dx, dy]; }
+      // Drehung, damit die Kanten genau entgegengesetzt liegen (höchstens 25° korrigieren)
+      const delta = norm(ang(b) + Math.PI - ang(a));
+      if (Math.abs(delta) > 25 * Math.PI / 180) continue;
+      const c = Math.cos(delta), sn = Math.sin(delta);
+      const rot = (x, y) => [f.x + (x - f.x)*c - (y - f.y)*sn, f.y + (x - f.x)*sn + (y - f.y)*c];
+      const [x1, y1] = rot(a[0], a[1]), [x2, y2] = rot(a[2], a[3]);
+      const dx = (b[0]+b[2] - x1 - x2) / 2, dy = (b[1]+b[3] - y1 - y2) / 2, dist = Math.hypot(dx, dy);
+      if (dist < bestD){ bestD = dist; best = {dx, dy, delta}; }
     }
   }
-  if (best){ f.x += best[0]; f.y += best[1]; }
+  if (best){
+    f.rot = Math.round(((f.rot + best.delta * 180 / Math.PI) % 360 + 360) % 360 * 100) / 100;
+    f.x += best.dx; f.y += best.dy;
+  }
 }
 const drags = new Map();
 svg.addEventListener('pointerdown', e => {
@@ -909,7 +920,7 @@ svg.addEventListener('pointerdown', e => {
   if (kind === 'f' && ui.selected !== id){ ui.selected = id; ui.colorOpen = false; render(); if (CAT[obj.type]?.stretch) toast('Am Eckpunkt ziehen, um Größe und Form zu ändern'); }
   const el = svg.querySelector(`[data-kind="${kind}"][data-id="${id}"]`);
   if (kind === 'k') el.parentNode.appendChild(el);
-  drags.set(e.pointerId, {kind, id, obj, el, dx:p.x - obj.x, dy:p.y - obj.y, sx:e.clientX, sy:e.clientY, moved:false});
+  drags.set(e.pointerId, {kind, id, obj, el, dx:p.x - obj.x, dy:p.y - obj.y, sx:e.clientX, sy:e.clientY, moved:false, rot0:obj.rot});
   try { svg.setPointerCapture(e.pointerId); } catch(_){}
 });
 window.addEventListener('pointermove', e => {
@@ -925,7 +936,7 @@ window.addEventListener('pointermove', e => {
     return;
   }
   d.obj.x = clamp(p.x - d.dx, 0, state.room.w); d.obj.y = clamp(p.y - d.dy, 0, state.room.h);
-  if (d.kind === 'f') snapFurniture(d.obj);
+  if (d.kind === 'f'){ d.obj.rot = d.rot0; snapFurniture(d.obj); }
   d.el.setAttribute('transform', d.kind === 'f' ? `translate(${d.obj.x} ${d.obj.y}) rotate(${d.obj.rot})` : `translate(${d.obj.x} ${d.obj.y})`);
   if (d.kind === 'k') $('#tray').classList.toggle('drop', overTray(e.clientX, e.clientY));
 });
