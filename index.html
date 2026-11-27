@@ -375,8 +375,8 @@ const CATALOG = [
       // rundes Filzkissen
       s += `<circle cx="0" cy="${h*.14}" r="${w*.23}" fill="#b4b2ae" stroke="#9c9a95" stroke-width="1"/><circle cx="0" cy="${h*.14}" r="${w*.23}" fill="url(#felt)" opacity=".5"/>`;
       return s; }},
-    {type:'kinderstuhl', name:'Kinderstuhl', w:36, h:38, color:'#ece6dc', noArea:true, draw:(w,h,c)=>{
-      const e = dk(c,.16);
+    {type:'kinderstuhl', name:'Kinderstuhl', w:36, h:38, color:'#c4996b', noArea:true, draw:(w,h,c)=>{
+      const e = dk(c,.28);
       // gebogene Rückenlehne mit zwei Pfosten
       let s = `<path d="M${-w*.46} ${-h*.4} Q0 ${-h*.56} ${w*.46} ${-h*.4} L${w*.46} ${-h*.28} Q0 ${-h*.44} ${-w*.46} ${-h*.28} Z" fill="${c}" stroke="${e}" stroke-width="1.2"/>`;
       s += rr(-w*.5, -h*.5, w*.15, h*.24, 3, dk(c,.05), e, 1.2) + rr(w*.35, -h*.5, w*.15, h*.24, 3, dk(c,.05), e, 1.2);
