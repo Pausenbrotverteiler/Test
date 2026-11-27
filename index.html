@@ -295,13 +295,25 @@ main{display:grid;grid-template-columns:96px 1fr;min-height:0;gap:0}
     <button id="resetBtn" class="danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>Alles löschen</button>
   </div>
   <p class="muted" style="font-size:12px;margin:10px 4px 0">Alle Daten bleiben nur auf diesem Gerät gespeichert und werden nirgendwohin hochgeladen.</p>
-  <p class="muted" style="font-size:12px;margin:4px 4px 0">App-Version 16</p>
+  <p class="muted" style="font-size:12px;margin:4px 4px 0">App-Version 17</p>
   <div class="actions"><button class="btn primary" id="menuDone">Fertig</button></div>
 </div>
 
 <input type="file" id="importInput" accept="application/json,.json" hidden>
 <div class="toast" id="toast"></div>
 
+<script>
+// Falls beim Start etwas schiefgeht: Hinweis anzeigen statt einer leeren Seite
+window.addEventListener('error', e => {
+  try {
+    if (document.getElementById('startError')) return;
+    const d = document.createElement('div'); d.id = 'startError';
+    d.style.cssText = 'position:fixed;left:16px;right:16px;bottom:16px;z-index:999;background:#b03a2e;color:#fff;padding:14px 16px;border-radius:14px;font:600 15px -apple-system,sans-serif';
+    d.textContent = 'Fehler in der App: ' + (e.message || 'unbekannt') + ' – bitte einen Screenshot an Claude schicken.';
+    document.body.appendChild(d);
+  } catch (_) {}
+});
+</script>
 <script>
 "use strict";
 /* ================= Helpers ================= */
