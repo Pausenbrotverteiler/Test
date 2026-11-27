@@ -29,7 +29,7 @@ Die App muss einmal über eine **https-Adresse** erreichbar sein, z. B. mit GitH
 2. Die angezeigte Adresse auf dem iPad in **Safari** öffnen.
 3. Teilen-Symbol → **„Zum Home-Bildschirm“**.
 
-Danach startet die App wie eine normale App im Vollbild und funktioniert auch offline.
+Danach startet die App wie eine normale App im Vollbild. Zum Öffnen wird eine Internetverbindung (WLAN) benötigt; die Daten selbst bleiben auf dem Gerät.
 
 > Hinweis: Die Daten gehören zur App auf dem Home-Bildschirm. Wenn man die Seite stattdessen in Safari öffnet, sieht man einen separaten, leeren Stand.
 
@@ -37,4 +37,4 @@ Danach startet die App wie eine normale App im Vollbild und funktioniert auch of
 
 - `index.html`: die komplette App
 - `manifest.webmanifest`, `icons/`: App-Name und Symbol für den Home-Bildschirm
-- `sw.js`: Offline-Unterstützung
+- `sw.js`: entfernt einen früher installierten Offline-Speicher (Service Worker)

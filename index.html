@@ -295,13 +295,17 @@ main{display:grid;grid-template-columns:96px 1fr;min-height:0;gap:0}
     <button id="resetBtn" class="danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>Alles löschen</button>
   </div>
   <p class="muted" style="font-size:12px;margin:10px 4px 0">Alle Daten bleiben nur auf diesem Gerät gespeichert und werden nirgendwohin hochgeladen.</p>
-  <p class="muted" style="font-size:12px;margin:4px 4px 0">App-Version 18</p>
+  <p class="muted" style="font-size:12px;margin:4px 4px 0">App-Version 19</p>
   <div class="actions"><button class="btn primary" id="menuDone">Fertig</button></div>
 </div>
 
 <input type="file" id="importInput" accept="application/json,.json" hidden>
 <div class="toast" id="toast"></div>
 
+<script>
+// Früheren Offline-Speicher (Service Worker) entfernen – er führte beim Update zu einer weißen Seite
+try { if ('serviceWorker' in navigator && navigator.serviceWorker.getRegistrations) navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister())).catch(() => {}); if (window.caches) caches.keys().then(ks => ks.forEach(k => caches.delete(k))).catch(() => {}); } catch (_) {}
+</script>
 <script>
 // Falls beim Start etwas schiefgeht: Hinweis anzeigen statt einer leeren Seite
 window.addEventListener('error', e => {
@@ -1254,12 +1258,6 @@ let rT; window.addEventListener('resize', () => { clearTimeout(rT); rT = setTime
   if (stripPhotos() | dropUnknownFurniture()) save();
   buildCatalog(); buildColorPop(); render();
   if (navigator.storage?.persist) navigator.storage.persist().catch(() => {});
-  if ('serviceWorker' in navigator && location.protocol === 'https:'){
-    // Bei jedem Start nach einer neuen Version suchen; wird sie aktiv, die App einmal neu laden
-    const hadController = !!navigator.serviceWorker.controller; let reloaded = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => { if (hadController && !reloaded){ reloaded = true; flushSave(); location.reload(); } });
-    navigator.serviceWorker.register('sw.js', {updateViaCache:'none'}).then(r => r.update()).catch(() => {});
-  }
 })();
 </script>
 </body>
