@@ -1,6 +1,6 @@
 // Offline-Unterstützung: App-Dateien werden auf dem Gerät zwischengespeichert.
 // Bewusst einfach und fehlertolerant gehalten, damit die App immer startet.
-const CACHE = 'kita-raum-v17';
+const CACHE = 'kita-raum-v18';
 const FILES = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
