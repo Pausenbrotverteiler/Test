@@ -1,5 +1,5 @@
 // Offline-Unterstützung: App-Dateien werden auf dem Gerät zwischengespeichert.
-const CACHE = 'kita-raum-v12';
+const CACHE = 'kita-raum-v13';
 const FILES = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES.map(f => new Request(f, { cache: 'reload' })))));

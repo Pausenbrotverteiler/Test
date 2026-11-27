@@ -94,6 +94,7 @@ main{display:grid;grid-template-columns:96px 1fr;min-height:0;gap:0}
 .colorPop .sw{aspect-ratio:1;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.12);position:relative;overflow:hidden}
 .colorPop .sw.on{box-shadow:0 0 0 2.5px var(--ink)}
 .colorPop .row{display:flex;gap:8px;margin-top:10px}
+.colorPop .row > .on{background:var(--ink);color:#fff}
 .colorPop .row > *{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;height:36px;border-radius:10px;background:#f0e9df;font-weight:600;font-size:14px;position:relative;overflow:hidden}
 .colorPop input[type=color]{position:absolute;inset:0;opacity:0;width:100%;height:100%;border:0;padding:0;cursor:pointer}
 .colorPop .rainbow{width:18px;height:18px;border-radius:50%;background:conic-gradient(#e07a5f,#e9b44c,#81b29a,#6d9dc5,#9c89b8,#e07a5f)}
@@ -294,7 +295,7 @@ main{display:grid;grid-template-columns:96px 1fr;min-height:0;gap:0}
     <button id="resetBtn" class="danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>Alles löschen</button>
   </div>
   <p class="muted" style="font-size:12px;margin:10px 4px 0">Alle Daten bleiben nur auf diesem Gerät gespeichert und werden nirgendwohin hochgeladen.</p>
-  <p class="muted" style="font-size:12px;margin:4px 4px 0">App-Version 12</p>
+  <p class="muted" style="font-size:12px;margin:4px 4px 0">App-Version 13</p>
   <div class="actions"><button class="btn primary" id="menuDone">Fertig</button></div>
 </div>
 
@@ -375,7 +376,7 @@ const CATALOG = [
       // runde Seitenholme
       s += rr(-w*.5, -h*.3, w*.14, h*.8, w*.07, c, e, 1.2) + rr(w*.36, -h*.3, w*.14, h*.8, w*.07, c, e, 1.2);
       return s; }},
-    {type:'ohrensessel', name:'Ohrensessel', w:80, h:84, color:'#5fa9a3', dots:true, draw:(w,h,c)=>{
+    {type:'ohrensessel', name:'Ohrensessel', w:80, h:84, color:'#5b5a58', patterns:true, draw:(w,h,c,o)=>{
       const e = dk(c,.18);
       const parts = (fill, seatFill, stroke) => {
         const st = stroke ? ` stroke="${stroke}" stroke-width="1.5"` : '';
@@ -384,7 +385,7 @@ const CATALOG = [
           + rr(-w*.5, -h*.14, w*.19, h*.58, w*.09, fill, stroke, 1.5) + rr(w*.31, -h*.14, w*.19, h*.58, w*.09, fill, stroke, 1.5)
           + `<path d="M${-w*.32} ${-h*.18} L${w*.32} ${-h*.18} L${w*.34} ${h*.34} Q${w*.34} ${h*.5} 0 ${h*.5} Q${-w*.34} ${h*.5} ${-w*.34} ${h*.34} Z" fill="${seatFill}"${st}/>`;
       };
-      let s = parts(c, lt(c,.08), null) + `<g opacity=".8">${parts('url(#dots)', 'url(#dots)', null)}</g>` + parts('none', 'none', e);
+      let s = parts(c, lt(c,.08), null) + (o && o.pattern === 'dots' ? `<g opacity=".8">${parts('url(#dots)', 'url(#dots)', null)}</g>` : '') + parts('none', 'none', e);
       // drei Knöpfe in der Rückenlehne
       for (const x of [-.13, 0, .13]) s += circ(w*x, -h*.27 + Math.abs(x)*h*.25, 2.6, dk(c,.12));
       return s; }},
@@ -643,7 +644,7 @@ function furnSVG(f){
   const sel = ui.selected === f.id && !ui.viewing;
   const locked = state.mode !== 'furnish' || ui.viewing;
   return `<g data-kind="f" data-id="${f.id}" transform="translate(${f.x} ${f.y}) rotate(${f.rot})" class="${locked ? 'furn-locked' : ''}">
-    <g ${t.rug ? '' : 'filter="url(#sh)"'}>${t.draw(f.w, f.h, f.color || t.color).replace(/id="cp"/g, `id="cp${f.id}"`).replace(/<g>/, `<g clip-path="url(#cp${f.id})">`)}</g>
+    <g ${t.rug ? '' : 'filter="url(#sh)"'}>${t.draw(f.w, f.h, f.color || t.color, f).replace(/id="cp"/g, `id="cp${f.id}"`).replace(/<g>/, `<g clip-path="url(#cp${f.id})">`)}</g>
     ${locked ? '' : `<rect x="${-f.w/2 - 8}" y="${-f.h/2 - 8}" width="${f.w + 16}" height="${f.h + 16}" fill="transparent"/>`}
     ${sel ? `<rect class="sel-outline" x="${-f.w/2 - 6}" y="${-f.h/2 - 6}" width="${f.w + 12}" height="${f.h + 12}" rx="8" stroke-width="${2/ui.scale}"/>` : ''}
   </g>`;
@@ -740,6 +741,8 @@ function updateSelTools(){
   if (!ui.colorOpen || t.noColor){ pop.classList.add('hide'); return; }
   const cur = (f.color || t.color).toLowerCase();
   pop.querySelectorAll('.sw').forEach(b => b.classList.toggle('on', b.dataset.c === cur));
+  $('#patRow').classList.toggle('hide', !t.patterns);
+  pop.querySelectorAll('[data-pat]').forEach(b => b.classList.toggle('on', b.dataset.pat === (f.pattern || 'none')));
   pop.classList.remove('hide');
   const pw = pop.offsetWidth, ph = pop.offsetHeight;
   let py = y - th - 8;
@@ -748,6 +751,7 @@ function updateSelTools(){
 }
 function buildColorPop(){
   $('#colorPop').innerHTML = FURN_COLORS.map(g => `<div class="grp">${g.name}</div><div class="sws">${g.c.map(c => `<button class="sw" data-c="${c}" style="background:${c}" aria-label="Farbe ${c}"></button>`).join('')}</div>`).join('')
+    + `<div class="row" id="patRow"><button data-pat="none">Ohne Muster</button><button data-pat="dots">Punkte</button></div>`
     + `<div class="row"><label><span class="rainbow"></span>Eigene Farbe<input type="color" id="customColor"></label><button data-reset="1">Standard</button></div>`;
 }
 function setFurnColor(c){
@@ -757,6 +761,7 @@ function setFurnColor(c){
 }
 $('#colorPop').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.pat){ const f = state.furniture.find(x => x.id === ui.selected); if (f){ if (b.dataset.pat === 'none') delete f.pattern; else f.pattern = b.dataset.pat; render(); save(); } return; }
   if (b.dataset.reset) setFurnColor(null); else if (b.dataset.c) setFurnColor(b.dataset.c);
 });
 $('#colorPop').addEventListener('input', e => { if (e.target.id === 'customColor') setFurnColor(e.target.value); });
