@@ -404,6 +404,17 @@ const CATALOG = [
   ]},
   {cat:'Tische', items:[
     {type:'tisch', name:'Tisch', w:160, h:80, color:'#e3c4a2', draw:(w,h,c)=> rr(-w/2,-h/2,w,h,8,c,dk(c)) + rr(-w/2+8,-h/2+8,w-16,h-16,4,'none',dk(c),1.2,'opacity=".5"')},
+    {type:'kitatisch', name:'Kita-Tisch', w:130, h:65, color:'#c4996b', draw:(w,h,c)=>{
+      const e = dk(c,.28);
+      let s = rr(-w/2, -h/2, w, h, 4, c, e, 1.6);
+      // Holzmaserung längs
+      for (let y = -h/2 + 7, i = 0; y < h/2 - 4; y += 7, i++) s += `<path d="M${-w/2 + 5} ${y} Q${-w*.1 + (i%3)*8} ${y + (i%2 ? 1.6 : -1.6)} ${w/2 - 5} ${y + (i%2 ? .6 : -.6)}" fill="none" stroke="${e}" stroke-width=".8" opacity=".3"/>`;
+      return s + rr(-w/2 + 2.5, -h/2 + 2.5, w - 5, h - 5, 2.5, 'none', lt(c,.25), 1, 'opacity=".6"'); }},
+    {type:'trapeztisch', name:'Trapeztisch', w:120, h:52, color:'#c4996b', draw:(w,h,c)=>{
+      const e = dk(c,.28), pts = `${-w/2},${h/2} ${w/2},${h/2} ${w/4},${-h/2} ${-w/4},${-h/2}`;
+      let s = `<clipPath id="cp"><polygon points="${pts}"/></clipPath><polygon points="${pts}" fill="${c}"/><g>`;
+      for (let y = -h/2 + 6, i = 0; y < h/2 - 3; y += 7, i++) s += `<path d="M${-w/2} ${y} Q${-w*.05 + (i%3)*7} ${y + (i%2 ? 1.6 : -1.6)} ${w/2} ${y + (i%2 ? .6 : -.6)}" fill="none" stroke="${e}" stroke-width=".8" opacity=".3"/>`;
+      return s + `</g><polygon points="${pts}" fill="none" stroke="${e}" stroke-width="1.6" stroke-linejoin="round"/>`; }},
     {type:'tischrund', name:'Runder Tisch', w:110, h:110, color:'#e3c4a2', draw:(w,h,c)=> `<ellipse rx="${w/2}" ry="${h/2}" fill="${c}" stroke="${dk(c)}" stroke-width="2"/><ellipse rx="${w/2-9}" ry="${h/2-9}" fill="none" stroke="${dk(c)}" stroke-width="1.2" opacity=".5"/>`},
     {type:'maltisch', name:'Maltisch', w:140, h:80, color:'#f4efe6', draw:(w,h,c)=> rr(-w/2,-h/2,w,h,8,c,dk(c)) + circ(-w*.25,-h*.12,9,'#e07a5f') + circ(-w*.05,h*.15,7,'#3d5a80') + circ(w*.2,-h*.1,8,'#e9b44c') + circ(w*.32,h*.2,6,'#81b29a') + rr(-w*.42,h*.05,w*.22,h*.28,3,'#fff','#ddd',1)},
   ]},
