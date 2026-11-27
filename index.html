@@ -295,7 +295,7 @@ main{display:grid;grid-template-columns:96px 1fr;min-height:0;gap:0}
     <button id="resetBtn" class="danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>Alles löschen</button>
   </div>
   <p class="muted" style="font-size:12px;margin:10px 4px 0">Alle Daten bleiben nur auf diesem Gerät gespeichert und werden nirgendwohin hochgeladen.</p>
-  <p class="muted" style="font-size:12px;margin:4px 4px 0">App-Version 15</p>
+  <p class="muted" style="font-size:12px;margin:4px 4px 0">App-Version 16</p>
   <div class="actions"><button class="btn primary" id="menuDone">Fertig</button></div>
 </div>
 
@@ -487,6 +487,23 @@ const CATALOG = [
       return rr(-w/2 + 3, -h/2 + 3, w - 6, h - 4, 2, dk(c,.12)) + rr(-w/2, -h/2, w, h - 4, 2.5, c, e, 1.6)
         + rr(-w/2 + 2.5, -h/2 + 2.5, w - 5, h - 9, 2, 'none', lt(c,.25), 1, 'opacity=".6"')
         + rr(w*.12, h/2 - 3.5, w*.22, 3, 1.5, '#9a9a96'); }},
+    {type:'kuechenzeile', name:'Küchenzeile', w:165, h:62, color:'#c8ab84', draw:(w,h,c)=>{
+      const e = dk(c,.3), steel = '#cfd3d6', steelD = '#a3a9ae';
+      // weiße Unterschränke schauen vorne minimal hervor, darüber die Arbeitsplatte
+      let s = rr(-w/2 + 2, -h/2 + 4, w - 4, h - 4, 2, '#f7f7f5', '#d6d6d2', 1);
+      s += rr(-w/2, -h/2, w, h - 3, 2.5, c, e, 1.5);
+      // Holzmaserung
+      for (let y = -h/2 + 10, i = 0; y < h/2 - 6; y += 6, i++) s += `<path d="M${-w/2 + 3} ${y} Q${w*.1 + (i%3)*10} ${y + (i%2 ? 1.4 : -1.4)} ${w/2 - 3} ${y}" fill="none" stroke="${e}" stroke-width=".7" opacity=".28"/>`;
+      // Rückwand hinten
+      s += rr(-w/2, -h/2, w, 6, 1.5, dk(c,.12), e, 1);
+      // Spüle mit Becken und Abtropffläche (links)
+      const sx = -w/2 + 8, sw = Math.min(w*.52, 90), sy = -h/2 + 10, sh = h - 22;
+      s += rr(sx, sy, sw, sh, 4, steel, steelD, 1.2);
+      s += rr(sx + 4, sy + 4, sw*.45, sh - 8, 5, '#b7bdc2', steelD, 1) + circ(sx + 4 + sw*.225, sy + sh/2 + 2, 2.2, '#8d9398');
+      for (let x = sx + sw*.55; x < sx + sw - 4; x += 4.5) s += `<line x1="${x}" y1="${sy + 5}" x2="${x}" y2="${sy + sh - 5}" stroke="${steelD}" stroke-width="1" opacity=".7"/>`;
+      // Wasserhahn
+      s += circ(sx + sw*.5, sy - 1, 2.6, '#9aa0a5') + `<path d="M${sx + sw*.5} ${sy - 1} L${sx + sw*.3} ${sy + 9}" stroke="#9aa0a5" stroke-width="2.4" stroke-linecap="round"/>`;
+      return s; }},
     {type:'pflanze', name:'Pflanze', w:55, h:55, color:'#d08c60', draw:(w,h,c)=>{ let s=circ(0,0,w*.32,c); for(let i=0;i<6;i++){ s+=`<ellipse cx="0" cy="${-w*.25}" rx="${w*.13}" ry="${w*.25}" fill="${i%2?'#81b29a':'#6a9c82'}" transform="rotate(${i*60})"/>`; } return s + circ(0,0,w*.1,'#5c8a72'); }},
     {type:'tuer', name:'Tür', w:90, h:90, noArea:true, noColor:true, draw:(w,h)=> `<rect x="${-w/2}" y="${h/2-6}" width="${w}" height="10" fill="#f6f1ea"/><path d="M${-w/2} ${h/2} A${w} ${h} 0 0 1 ${w/2} ${h/2-h}" fill="none" stroke="#b9a996" stroke-width="1.5" stroke-dasharray="5 5"/><line x1="${-w/2}" y1="${h/2}" x2="${-w/2}" y2="${-h/2}" stroke="#8a7a68" stroke-width="5" stroke-linecap="round"/>`},
     {type:'fenster', name:'Fenster', w:130, h:14, noArea:true, noColor:true, draw:(w,h)=> rr(-w/2,-h/2,w,h,2,'#dcebf3','#9cbccd') + `<line x1="0" y1="${-h/2}" x2="0" y2="${h/2}" stroke="#9cbccd" stroke-width="2"/>`},
