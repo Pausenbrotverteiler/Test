@@ -444,6 +444,52 @@ const CATALOG = [
     {type:'hochebene', name:'Hochebene', w:220, h:160, color:'#b5838d', draw:(w,h,c)=> rr(-w/2,-h/2,w,h,10,lt(c,.85),c,2.5,'stroke-dasharray="12 8"') + `<g stroke="${c}" stroke-width="3" stroke-linecap="round"><line x1="${w/2-40}" y1="${h/2}" x2="${w/2-40}" y2="${h/2-50}"/><line x1="${w/2-15}" y1="${h/2}" x2="${w/2-15}" y2="${h/2-50}"/><line x1="${w/2-40}" y1="${h/2-14}" x2="${w/2-15}" y2="${h/2-14}"/><line x1="${w/2-40}" y1="${h/2-30}" x2="${w/2-15}" y2="${h/2-30}"/></g>`},
   ]},
   {cat:'Raum', items:[
+    {type:'offenesregal', name:'Offenes Regal', w:100, h:40, color:'#c4996b', draw:(w,h,c)=>{
+      const e = dk(c,.28);
+      // Deckplatte, vorne (unten) offene Seite mit dunklerem Schatten der Fächer
+      return rr(-w/2, -h/2, w, h, 2.5, c, e, 1.6) + rr(-w/2 + 4, h/2 - 7, w - 8, 5, 1.5, dk(c,.22))
+        + rr(-w/2 + 2.5, -h/2 + 2.5, w - 5, h - 12, 2, 'none', lt(c,.25), 1, 'opacity=".6"'); }},
+    {type:'bogenregal', name:'Bogenregal', w:120, h:55, color:'#c4996b', draw:(w,h,c)=>{
+      const e = dk(c,.28), a = 70 * Math.PI / 180, Ro = (w/2) / Math.sin(a/2), cy = -h/2 + Ro;
+      const Ri = Math.max(10, (Ro - h) / Math.cos(a/2)), sa = Math.sin(a/2), ca = Math.cos(a/2);
+      const P = r => [[-r*sa, cy - r*ca], [r*sa, cy - r*ca]];
+      const [o1, o2] = P(Ro), [i1, i2] = P(Ri);
+      let s = `<path d="M${o1[0]} ${o1[1]} A${Ro} ${Ro} 0 0 1 ${o2[0]} ${o2[1]} L${i2[0]} ${i2[1]} A${Ri} ${Ri} 0 0 0 ${i1[0]} ${i1[1]} Z" fill="${c}" stroke="${e}" stroke-width="1.6" stroke-linejoin="round"/>`;
+      // offene Innenseite (Fächer) und Mittelwand
+      const Rm = Ri + 5;
+      s += `<path d="M${-Rm*sa} ${cy - Rm*ca} A${Rm} ${Rm} 0 0 1 ${Rm*sa} ${cy - Rm*ca}" fill="none" stroke="${dk(c,.22)}" stroke-width="5" opacity=".8"/>`;
+      return s + `<line x1="0" y1="${cy - Ri}" x2="0" y2="${cy - Ro + 3}" stroke="${e}" stroke-width="1" opacity=".45"/>`; }},
+    {type:'viertelregal', name:'Viertelkreisregal', w:80, h:80, color:'#c4996b', draw:(w,h,c)=>{
+      const e = dk(c,.28);
+      // gerade Vorderkante unten (offen), Rundung hinten links
+      return `<path d="M${w/2} ${h/2} L${-w/2} ${h/2} A${w} ${h} 0 0 1 ${w/2} ${-h/2} Z" fill="${c}" stroke="${e}" stroke-width="1.6" stroke-linejoin="round"/>`
+        + rr(-w/2 + 6, h/2 - 7, w - 10, 5, 1.5, dk(c,.22)); }},
+    {type:'schubladenschrank', name:'Schubladenschrank', w:130, h:45, color:'#c4996b', draw:(w,h,c)=>{
+      const e = dk(c,.28);
+      let s = rr(-w/2, -h/2, w, h, 2.5, c, e, 1.6) + rr(-w/2 + 2.5, -h/2 + 2.5, w - 5, h - 5, 2, 'none', lt(c,.25), 1, 'opacity=".6"');
+      // Schubladen vorne: Fronten mit Griffmulden
+      const n = 2, cw = (w - 8) / n;
+      for (let i = 0; i < n; i++){ const x = -w/2 + 4 + i*cw; s += rr(x + 1, h/2 - 9, cw - 2, 7, 1.5, lt(c,.08), e, .8) + rr(x + cw/2 - 8, h/2 - 6.5, 16, 2.5, 1.2, dk(c,.35)); }
+      return s; }},
+    {type:'buecherregal', name:'Bücherregal', w:90, h:45, color:'#c4996b', draw:(w,h,c)=>{
+      const e = dk(c,.28), cols = ['#e07a5f','#3d5a80','#e9b44c','#81b29a','#d65a6f','#6d9dc5','#9c89b8','#f2cc8f'];
+      // Seitenwände (vorne abgerundet) und drei schräge Bücherreihen
+      let s = rr(-w/2 + 5, -h/2 + 2, w - 10, h - 4, 1.5, dk(c,.12));
+      const rows = 3, rh = (h - 6) / rows;
+      for (let r = 0; r < rows; r++){
+        const y = -h/2 + 3 + r*rh;
+        s += rr(-w/2 + 5, y, w - 10, rh - 1, 1, lt(c,.04));
+        let x = -w/2 + 8, i = r*3;
+        while (x < w/2 - 14){ const bw = 9 + (i*7 % 6); s += rr(x, y + 1.5, bw, rh - 5, 1, cols[i % cols.length]); x += bw + 2.5; i++; }
+        s += `<line x1="${-w/2 + 5}" y1="${y + rh - 1.5}" x2="${w/2 - 5}" y2="${y + rh - 1.5}" stroke="${e}" stroke-width="1.6"/>`;
+      }
+      return s + `<path d="M${-w/2} ${-h/2} L${-w/2 + 5} ${-h/2} L${-w/2 + 5} ${h/2} Q${-w/2} ${h/2} ${-w/2} ${h/2 - 6} Z M${w/2} ${-h/2} L${w/2 - 5} ${-h/2} L${w/2 - 5} ${h/2} Q${w/2} ${h/2} ${w/2} ${h/2 - 6} Z" fill="${c}" stroke="${e}" stroke-width="1.2" stroke-linejoin="round"/>`; }},
+    {type:'schrank', name:'Schrank', w:60, h:50, color:'#c4996b', draw:(w,h,c)=>{
+      const e = dk(c,.28);
+      // Deckplatte mit leichtem Überstand, vorne Tür mit Griff
+      return rr(-w/2 + 3, -h/2 + 3, w - 6, h - 4, 2, dk(c,.12)) + rr(-w/2, -h/2, w, h - 4, 2.5, c, e, 1.6)
+        + rr(-w/2 + 2.5, -h/2 + 2.5, w - 5, h - 9, 2, 'none', lt(c,.25), 1, 'opacity=".6"')
+        + rr(w*.12, h/2 - 3.5, w*.22, 3, 1.5, '#9a9a96'); }},
     {type:'regal', name:'Regal', w:160, h:40, color:'#d9b48f', draw:(w,h,c)=>{ let s=rr(-w/2,-h/2,w,h,4,c,dk(c)); const n=Math.max(2,Math.round(w/40)), cw=w/n; for(let i=0;i<n;i++){ if(i) s+=`<line x1="${-w/2+i*cw}" y1="${-h/2}" x2="${-w/2+i*cw}" y2="${h/2}" stroke="${dk(c)}" stroke-width="2"/>`; s+=rr(-w/2+i*cw+6,-h/2+6,cw-12,h-12,3,ACC[i%4],null,0,'opacity=".75"'); } return s; }},
     {type:'garderobe', name:'Garderobe', w:180, h:35, color:'#e8ddd0', draw:(w,h,c)=>{ let s=rr(-w/2,-h/2,w,h,4,c,dk(c)); for(let x=-w/2+20;x<w/2-10;x+=30) s+=circ(x,0,5,dk(c,.35)); return s; }},
     {type:'pflanze', name:'Pflanze', w:55, h:55, color:'#d08c60', draw:(w,h,c)=>{ let s=circ(0,0,w*.32,c); for(let i=0;i<6;i++){ s+=`<ellipse cx="0" cy="${-w*.25}" rx="${w*.13}" ry="${w*.25}" fill="${i%2?'#81b29a':'#6a9c82'}" transform="rotate(${i*60})"/>`; } return s + circ(0,0,w*.1,'#5c8a72'); }},
